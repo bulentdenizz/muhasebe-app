@@ -15,6 +15,7 @@
     "tailwindcss": "^4.2.1"
   },
   "dependencies": {
-    "@tailwindcss/cli": "^4.2.1"
+    "@tailwindcss/cli": "^4.2.1",
+    "better-sqlite3": "^12.6.2"
   }
 }

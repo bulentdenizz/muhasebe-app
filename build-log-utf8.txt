@@ -1,0 +1,126 @@
+﻿node.exe : - Searching 
+dependency tree
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (- Searching d   
+ ependency tree:Str    
+ing) [], RemoteExc    
+eption
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+(node:9884) [DEP0169] 
+DeprecationWarning: 
+`url.parse()` behavior 
+is not standardized 
+and prone to errors 
+that have security 
+implications. Use the 
+WHATWG URL API 
+instead. CVEs are not 
+issued for 
+`url.parse()` 
+vulnerabilities.
+(Use `node 
+--trace-deprecation 
+...` to show where the 
+warning was created)
+(node:9884) [DEP0060] 
+DeprecationWarning: 
+The `util._extend` API 
+is deprecated. Please 
+use Object.assign() 
+instead.
+(node:9884) [DEP0190] 
+DeprecationWarning: 
+Passing args to a 
+child process with 
+shell option true can 
+lead to security 
+vulnerabilities, as 
+the arguments are not 
+escaped, only 
+concatenated.
+Ô£û Rebuild Failed
+
+An unhandled error 
+occurred inside 
+electron-rebuild
+node-gyp failed to 
+rebuild 'C:\muhasebe-ap
+p\node_modules\@parcel\
+watcher'.
+For more information, 
+rerun with the DEBUG 
+environment variable 
+set to 
+"electron-rebuild".
+
+Error: Could not find 
+any Visual Studio 
+installation to use
+
+
+
+Error: node-gyp failed 
+to rebuild 'C:\muhasebe
+-app\node_modules\@parc
+el\watcher'.
+For more information, 
+rerun with the DEBUG 
+environment variable 
+set to 
+"electron-rebuild".
+
+Error: Could not find 
+any Visual Studio 
+installation to use
+
+
+    at 
+NodeGyp.rebuildModule (
+C:\muhasebe-app\node_mo
+dules\electron-rebuild\
+lib\src\module-type\nod
+e-gyp.js:120:19)
+    at process.processT
+icksAndRejections (node
+:internal/process/task_
+queues:103:5)
+    at async ModuleRebu
+ilder.rebuildNodeGypMod
+ule (C:\muhasebe-app\no
+de_modules\electron-reb
+uild\lib\src\module-reb
+uilder.js:98:9)
+    at async ModuleRebu
+ilder.rebuild (C:\muhas
+ebe-app\node_modules\el
+ectron-rebuild\lib\src\
+module-rebuilder.js:128
+:14)
+    at async Rebuilder.
+rebuildModuleAt (C:\muh
+asebe-app\node_modules\
+electron-rebuild\lib\sr
+c\rebuild.js:149:13)
+    at async 
+Rebuilder.rebuild (C:\m
+uhasebe-app\node_module
+s\electron-rebuild\lib\
+src\rebuild.js:112:17)
+    at async C:\muhaseb
+e-app\node_modules\elec
+tron-rebuild\lib\src\cl
+i.js:158:9

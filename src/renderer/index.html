@@ -1,4 +1,58 @@
-<main class="flex-1 flex flex-col overflow-hidden">
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <link href="../../dist/output.css" rel="stylesheet">
+  <title>Ön Muhasebe v1.0</title>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+
+ <div id="cariModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm" onclick="modalKapat()"></div>
+    
+    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all border border-gray-200">
+        <div class="p-6 border-b bg-gray-50 rounded-t-xl">
+            <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Cari Kaydı</h3>
+        </div>
+        
+        <div class="p-6 space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Unvan / Ad Soyad</label>
+                <input type="text" id="unvan" placeholder="Örn: ABC Ltd. Şti." class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Telefon</label>
+                <input type="text" id="phone" placeholder="05XX XXX XX XX" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Açılış Bakiyesi</label>
+                <div class="relative">
+                    <input type="number" id="balance" value="0" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition pl-8">
+                    <span class="absolute left-3 top-3 text-gray-400">₺</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
+            <button onclick="modalKapat()" class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-200 rounded-lg transition">Vazgeç</button>
+            <button onclick="cariKaydet()" class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-200 transition active:scale-95">Kaydet</button>
+        </div>
+    </div>
+  </div>
+  <div class="flex h-screen">
+    <aside class="w-64 bg-gray-900 text-white flex flex-col">
+      <div class="h-16 flex items-center justify-center border-b border-gray-800">
+        <h1 class="text-xl font-bold tracking-wider">MUHASEBE PRO</h1>
+      </div>
+      <nav class="flex-1 px-4 py-6 space-y-2">
+        <button onclick="sayfaDegistir('anasayfa', 'Ana Sayfa')" class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Ana Sayfa</button>
+        <button onclick="sayfaDegistir('cariler', 'Cari Hesaplar')" class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Cari Hesaplar</button>
+        <button onclick="sayfaDegistir('stok', 'Stok Yönetimi')" class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Stok Yönetimi</button>
+        <button onclick="sayfaDegistir('faturalar', 'Faturalar')" class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Faturalar</button>
+      </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
   
   <header class="h-16 bg-white shadow-sm flex items-center px-8 text-2xl font-semibold text-gray-700" id="pageTitle">
     Ana Sayfa
@@ -31,9 +85,9 @@
       <div class="bg-white rounded-lg shadow border overflow-hidden">
         <table class="w-full text-left">
           <thead class="bg-gray-50 border-b">
-            <tr><th class="p-4">Unvan</th><th class="p-4">Telefon</th><th class="p-4">Bakiye</th><th class="p-4 text-right">İşlem</th></tr>
+            <tr><th class="p-4">Unvan</th><th class="p-4">Telefon</th><th class="p-4">Bakiye</th><th class="p-4">Durum</th><th class="p-4 text-right">İşlem</th></tr>
           </thead>
-          <tbody id="cariTableBody"></tbody>
+          <tbody id="cariListesi"></tbody>
         </table>
       </div>
     </section>
@@ -65,3 +119,8 @@
 
   </div>
 </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

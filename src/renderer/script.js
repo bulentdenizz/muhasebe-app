@@ -7,6 +7,21 @@ function modalKapat() {
     document.getElementById('cariModal').classList.add('hidden');
 }
 
+function sayfaDegistir(sayfaId, baslik) {
+    // Tüm bölümleri gizle
+    document.querySelectorAll('section').forEach(section => {
+        section.classList.add('hidden');
+    });
+
+    // İlgili bölümü göster
+    document.getElementById('section-' + sayfaId).classList.remove('hidden');
+    
+    // Başlığı güncelle
+    document.getElementById('pageTitle').innerText = baslik;
+
+    // Menüdeki aktif rengi güncellemek için de burayı kullanabiliriz
+}
+
 // Kaydetme İşlemi
 async function cariKaydet() {
     const unvan = document.getElementById('unvan').value;

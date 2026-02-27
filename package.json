@@ -17,6 +17,6 @@
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.2.1",
-    "better-sqlite3": "^12.6.2"
+    "sqlite3": "^5.1.7"
   }
 }

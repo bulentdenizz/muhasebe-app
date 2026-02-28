@@ -26,4 +26,22 @@ db.run(createCariTable, (err) => {
     }
 });
 
+// Stok Tablosunu Oluştur (Eğer yoksa)
+const createStokTable = `
+CREATE TABLE IF NOT EXISTS stoklar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    urun_adi TEXT NOT NULL,
+    barkod TEXT,
+    alis_fiyati DECIMAL(18, 2) DEFAULT 0,
+    satis_fiyati DECIMAL(18, 2) DEFAULT 0,
+    kdv_orani INTEGER DEFAULT 18,
+    stok_miktari INTEGER DEFAULT 0
+);`;
+
+db.run(createStokTable, (err) => {
+    if (err) {
+        console.error("Stok tablosu oluşturma hatası", err);
+    }
+});
+
 module.exports = db;

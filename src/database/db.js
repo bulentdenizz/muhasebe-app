@@ -58,13 +58,20 @@ CREATE TABLE IF NOT EXISTS islemler (
     islem_tipi TEXT NOT NULL,
     aciklama TEXT,
     tutar DECIMAL(18, 2) NOT NULL,
+    vade_tarihi DATE,
+    stok_id INTEGER,
     tarih DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(cari_id) REFERENCES cariler(id) ON DELETE CASCADE
+    FOREIGN KEY(cari_id) REFERENCES cariler(id) ON DELETE CASCADE,
+    FOREIGN KEY(stok_id) REFERENCES stoklar(id) ON DELETE SET NULL
 );`;
 
 db.run(createIslemlerTable, (err) => {
     if (err) {
         console.error("İşlemler tablosu oluşturma hatası", err);
+    } else {
+        // Eski tablolarda vade_tarihi veya stok_id yoksa ekleyelim (Migrate)
+        db.run(`ALTER TABLE islemler ADD COLUMN vade_tarihi DATE`, (err) => { });
+        db.run(`ALTER TABLE islemler ADD COLUMN stok_id INTEGER REFERENCES stoklar(id) ON DELETE SET NULL`, (err) => { });
     }
 });
 

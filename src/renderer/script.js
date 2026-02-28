@@ -2,13 +2,20 @@
 window.onload = () => {
     carileriYukle();
     stoklariYukle();
+    satisFormlariniDoldur();
 };
+
+// Global Data Storage for easy price calculation
+let globalStokVerileri = [];
+let globalCariVerileri = [];
+let faturaSepeti = []; // SEPET DEĞİŞKENİ (Çoklu ürün listesi)
 
 async function carileriYukle() {
     try {
-        // Preload.js'deki isme göre çağırdık
         const cariler = await window.api.carileriGetir();
-        const tabloGövdesi = document.getElementById('cariListesi'); // HTML'deki id ile aynı olmalı
+        globalCariVerileri = cariler; // Cache it
+
+        const tabloGövdesi = document.getElementById('cariListesi');
 
         if (!tabloGövdesi) return;
 
@@ -73,7 +80,7 @@ async function cariKaydet() {
     try {
         const sonuc = await window.api.cariEkle(veri);
         if (sonuc.changes > 0) {
-            alert("Cari başarıyla kaydedildi!");
+            alert("Müşteri başarıyla kaydedildi!");
             modalKapat();
             carileriYukle(); // Sayfayı yenilemek yerine listeyi tazele
         }
@@ -83,7 +90,7 @@ async function cariKaydet() {
 }
 
 async function cariSil(id) {
-    if (confirm("Bu cari kaydını silmek istediğinize emin misiniz?")) {
+    if (confirm("Bu müşteri kaydını silmek istediğinize emin misiniz?")) {
         try {
             const sonuc = await window.api.cariSil(id);
             if (sonuc.changes > 0) {
@@ -157,6 +164,8 @@ function stokModalKapat() { document.getElementById('stokModal').classList.add('
 async function stoklariYukle() {
     try {
         const stoklar = await window.api.stoklariGetir();
+        globalStokVerileri = stoklar; // Cache it
+
         const tabloGövdesi = document.getElementById('stokListesi');
 
         if (!tabloGövdesi) return;
@@ -275,5 +284,171 @@ function aramaYap(girdiId, tabloId) {
         } else {
             satirlar[i].style.display = "none";
         }
+    }
+}
+
+// --- FATURA / SATIŞ MODÜLÜ (3. HAFTA) ---
+
+async function satisFormlariniDoldur() {
+    const cariSelect = document.getElementById('satisCariSecim');
+    const stokSelect = document.getElementById('satisStokSecim');
+
+    if (!cariSelect || !stokSelect) return;
+
+    // Önce temizle
+    cariSelect.innerHTML = '<option value="">-- Müşteri Seçin --</option>';
+    stokSelect.innerHTML = '<option value="">-- Ürün Seçin --</option>';
+
+    // Tüm carileri getir (Global listemizi güncel çekiyoruz)
+    const cariler = await window.api.carileriGetir();
+    cariler.forEach(c => {
+        cariSelect.innerHTML += `<option value="${c.id}">${c.unvan} (${c.segment}) - Bakiye: ₺${c.bakiye}</option>`;
+    });
+
+    // Tüm stokları getir
+    const stoklar = await window.api.stoklariGetir();
+    stoklar.forEach(s => {
+        // Stoğu biten ürünleri göster ama engelle veya belirt
+        const stokBilgisi = s.stok_miktari > 0 ? `(Stok: ${s.stok_miktari})` : `(STOKTA YOK)`;
+        stokSelect.innerHTML += `<option value="${s.id}" ${s.stok_miktari <= 0 ? 'disabled' : ''}>${s.urun_adi} - ₺${s.satis_fiyati} ${stokBilgisi}</option>`;
+    });
+}
+
+function hesaplaSatisTutar() {
+    // Sadece görsellik için kalsa da kullanılmayacak; Sepet mantığında sildik.
+}
+
+function sepeteEkle() {
+    const secilenStokId = document.getElementById('satisStokSecim').value;
+    const adet = parseInt(document.getElementById('satisAdet').value) || 1;
+
+    if (!secilenStokId) return alert("Hata: Lütfen eklenecek bir ürün seçin!");
+    if (adet < 1) return alert("Hata: Geçerli bir adet girin!");
+
+    const urun = globalStokVerileri.find(s => s.id == secilenStokId);
+    if (!urun) return alert("Hata: Ürün verisi sistemde bulunamadı!");
+
+    // Stok yetersizse uyar ve engelle
+    if (urun.stok_miktari < adet) {
+        return alert(`Yetersiz Stok! Bu üründen elinizde sadece ${urun.stok_miktari} adet var.`);
+    }
+
+    // Sepette aynı üründen var mı kontrol et (Varsa adedini artır)
+    const sepettekiUrun = faturaSepeti.find(u => u.stok_id == secilenStokId);
+    if (sepettekiUrun) {
+        if (urun.stok_miktari < (sepettekiUrun.adet + adet)) {
+            return alert(`Yetersiz Stok! Bu üründen toplmada sadece ${urun.stok_miktari} satabilirsiniz.`);
+        }
+        sepettekiUrun.adet += adet;
+
+        const kdvOrani = parseFloat(urun.kdv_orani) || 0;
+        const netBirimFiyat = parseFloat(urun.satis_fiyati) || 0;
+        const hamTutar = netBirimFiyat * sepettekiUrun.adet;
+        const kdvTutari = hamTutar * (kdvOrani / 100);
+        sepettekiUrun.tutar = hamTutar + kdvTutari;
+
+    } else {
+        // Yeni ürün olarak sepete ekle
+        const kdvOrani = parseFloat(urun.kdv_orani) || 0;
+        const netBirimFiyat = parseFloat(urun.satis_fiyati) || 0;
+        const hamTutar = netBirimFiyat * adet;
+        const kdvTutari = hamTutar * (kdvOrani / 100);
+        const genelToplam = hamTutar + kdvTutari;
+
+        faturaSepeti.push({
+            stok_id: urun.id,
+            urun_adi: urun.urun_adi,
+            kdv_orani: kdvOrani,
+            net_birim_fiyat: netBirimFiyat,
+            adet: adet,
+            tutar: genelToplam
+        });
+    }
+
+    // Formu temizle ve sepeti çiz
+    document.getElementById('satisStokSecim').value = "";
+    document.getElementById('satisAdet').value = "1";
+    sepetiCiz();
+}
+
+function sepettenCikar(index) {
+    faturaSepeti.splice(index, 1);
+    sepetiCiz();
+}
+
+function sepetiCiz() {
+    const tabloGövdesi = document.getElementById('sepetListesi');
+    const genelToplamLabel = document.getElementById('genelToplamTutar');
+    const sepetSayisiLabel = document.getElementById('sepetUrunSayisi');
+
+    tabloGövdesi.innerHTML = "";
+    let sepetGenelToplami = 0;
+
+    if (faturaSepeti.length === 0) {
+        tabloGövdesi.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400 italic">Sepete henüz ürün eklenmedi.</td></tr>`;
+        genelToplamLabel.innerText = "₺ 0,00";
+        genelToplamLabel.setAttribute('data-hesaplanan', '0');
+        sepetSayisiLabel.innerText = "0 Ürün";
+        return;
+    }
+
+    faturaSepeti.forEach((kalem, index) => {
+        sepetGenelToplami += kalem.tutar;
+        const birimFiyat = kalem.net_birim_fiyat.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        const yekunTutar = kalem.tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+
+        tabloGövdesi.innerHTML += `
+            <tr class="hover:bg-gray-50 border-b border-gray-100">
+                <td class="px-4 py-3">${kalem.urun_adi}</td>
+                <td class="px-4 py-3 text-gray-500">₺${birimFiyat}</td>
+                <td class="px-4 py-3 font-bold">${kalem.adet}</td>
+                <td class="px-4 py-3 font-bold text-right text-indigo-600">₺${yekunTutar}</td>
+                <td class="px-4 py-3 text-right">
+                    <button onclick="sepettenCikar(${index})" class="text-red-500 hover:text-red-700 font-bold px-2">&times;</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    genelToplamLabel.innerText = "₺ " + sepetGenelToplami.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+    genelToplamLabel.setAttribute('data-hesaplanan', sepetGenelToplami);
+    sepetSayisiLabel.innerText = `${faturaSepeti.length} Ürün`;
+}
+
+async function satisIsleminiTamamla() {
+    const cariId = document.getElementById('satisCariSecim').value;
+    const vadeTarihi = document.getElementById('satisVade').value;
+    const genelToplam = parseFloat(document.getElementById('genelToplamTutar').getAttribute('data-hesaplanan'));
+
+    if (!cariId) return alert("Hata: Lütfen faturanın kesileceği Müşteriyi (Cari) seçin!");
+    if (faturaSepeti.length === 0) return alert("Hata: Sepette hiç ürün bulunmuyor, fatura oluşturulamaz.");
+
+    // Backend'e gönderilecek paket (Çoklu Kalem Mantığı)
+    const faturaPaketi = {
+        cari_id: cariId,
+        vade_tarihi: vadeTarihi || null,
+        genel_toplam: genelToplam,
+        sepet_icerik: faturaSepeti
+    };
+
+    try {
+        const sonuc = await window.api.satisYap(faturaPaketi);
+        if (sonuc.success) {
+            alert(`Fatura başarıyla kesildi! (${sonuc.islemSayisi} adet kalem işlendi.)`);
+
+            // Sepeti Boşalt ve Formları Sıfırla
+            faturaSepeti = [];
+            sepetiCiz();
+            document.getElementById('satisCariSecim').value = "";
+            document.getElementById('satisVade').value = "";
+
+            // Güncel verileri tazele
+            carileriYukle();
+            stoklariYukle();
+            satisFormlariniDoldur();
+        }
+    } catch (error) {
+        alert("Satış işleminde hata oluştu!\n(Veritabanı işlemleri geri alındı)\n\n" + error);
+        console.error(error);
     }
 }

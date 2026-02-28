@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('api', {
     stokEkle: (veriler) => ipcRenderer.invoke('stok-ekle', veriler),
     stoklariGetir: () => ipcRenderer.invoke('stoklari-getir'),
     stokSil: (id) => ipcRenderer.invoke('stok-sil', id),
+    satisYap: (veri) => ipcRenderer.invoke('satis-yap', veri)
 });

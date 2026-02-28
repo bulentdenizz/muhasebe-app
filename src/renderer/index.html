@@ -15,7 +15,7 @@
     <div
       class="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all border border-gray-200">
       <div class="p-6 border-b bg-gray-50 rounded-t-xl">
-        <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Cari Kaydı</h3>
+        <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Müşteri Kaydı</h3>
       </div>
 
       <div class="p-6 space-y-5">
@@ -124,8 +124,8 @@
       <nav class="flex-1 px-4 py-6 space-y-2">
         <button onclick="sayfaDegistir('anasayfa', 'Ana Sayfa')"
           class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Ana Sayfa</button>
-        <button onclick="sayfaDegistir('cariler', 'Cari Hesaplar')"
-          class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Cari Hesaplar</button>
+        <button onclick="sayfaDegistir('cariler', 'Müşteriler')"
+          class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Müşteriler</button>
         <button onclick="sayfaDegistir('stok', 'Stok Yönetimi')"
           class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Stok Yönetimi</button>
         <button onclick="sayfaDegistir('faturalar', 'Faturalar')"
@@ -162,9 +162,9 @@
         <section id="section-cariler" class="hidden">
           <div class="flex justify-between items-center mb-6">
             <input type="text" id="cariArama" onkeyup="aramaYap('cariArama', 'cariListesi')"
-              placeholder="Cari ara (Unvan veya Telefon)..."
+              placeholder="Müşteri ara (Unvan veya Telefon)..."
               class="w-1/3 border p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="modalAc()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">+ Yeni Cari</button>
+            <button onclick="modalAc()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">+ Yeni Müşteri</button>
           </div>
           <div class="bg-white rounded-lg shadow border overflow-hidden">
             <table class="w-full text-left">
@@ -187,7 +187,7 @@
         <section id="section-cari-detay" class="hidden space-y-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <button onclick="sayfaDegistir('cariler', 'Cari Hesaplar')"
+              <button onclick="sayfaDegistir('cariler', 'Müşteriler')"
                 class="flex items-center justify-center p-2 rounded-full border border-gray-300 hover:bg-gray-100 text-gray-600 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
@@ -284,9 +284,104 @@
           </div>
         </section>
 
-        <section id="section-faturalar" class="hidden">
-          <div class="bg-white p-12 rounded-lg border-2 border-dashed border-gray-300 text-center">
-            <p class="text-gray-500 italic">Fatura modülü yakında eklenecek...</p>
+        <section id="section-faturalar" class="hidden space-y-8">
+          <div class="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">Yeni Satış Faturası</h2>
+              <p class="text-gray-500 text-sm mt-1">Müşteriye stoktan ürün satışı gerçekleştirin. Müşteri borçlanır,
+                stok düşer.</p>
+            </div>
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 flex items-center justify-center rounded-xl">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                </path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow border border-gray-200 p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Sol ve Orta: Form + Sepet -->
+            <div class="md:col-span-2 space-y-6">
+
+              <div
+                class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Satılacak Ürün</label>
+                  <select id="satisStokSecim" onchange="hesaplaSatisTutar()"
+                    class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <option value="">-- Ürün Seçin --</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Adet</label>
+                  <input type="number" id="satisAdet" value="1" min="1" onchange="hesaplaSatisTutar()"
+                    onkeyup="hesaplaSatisTutar()"
+                    class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                </div>
+                <div>
+                  <button onclick="sepeteEkle()"
+                    class="w-full bg-blue-600 text-white font-bold p-3 rounded-lg shadow hover:bg-blue-700 transition">Sepete
+                    Ekle</button>
+                </div>
+              </div>
+
+              <!-- SEPET TABLOSU -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                  <h4 class="font-bold text-gray-700 text-sm">Fatura Kalemleri (Sepet)</h4>
+                  <span id="sepetUrunSayisi"
+                    class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-1 rounded-full">0 Ürün</span>
+                </div>
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-gray-50 border-b">
+                    <tr>
+                      <th class="px-4 py-2 font-semibold text-gray-600">Ürün Adı</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600">Birim</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600">Adet</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600 text-right">Tutar</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="sepetListesi" class="divide-y divide-gray-100 bg-white">
+                    <tr>
+                      <td colspan="5" class="px-4 py-8 text-center text-gray-400 italic">Sepete henüz ürün eklenmedi.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Sağ Sütun: Müşteri, Özet ve Buton -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 flex flex-col justify-between space-y-6">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Müşteri Seçimi</label>
+                <select id="satisCariSecim"
+                  class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition mb-4">
+                  <option value="">-- Müşteri Seçin --</option>
+                </select>
+
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Vade Tarihi (Opsiyonel)</label>
+                <input type="date" id="satisVade"
+                  class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition mb-4">
+
+                <h3 class="text-sm font-bold text-gray-500 uppercase border-b pb-2 mb-4 mt-6">Genel Toplam Özeti</h3>
+                <div class="flex justify-between items-center bg-white p-4 rounded-lg border border-gray-200">
+                  <span class="font-bold text-gray-700">Toplam Ödenecek:</span>
+                  <span id="genelToplamTutar" class="text-2xl font-black text-indigo-600" data-hesaplanan="0">₺
+                    0,00</span>
+                </div>
+              </div>
+
+              <button onclick="satisIsleminiTamamla()"
+                class="w-full mt-6 bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-indigo-700 hover:shadow-xl transition active:scale-95 flex items-center justify-center space-x-2">
+                <span>Faturayı Kes (Onayla)</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </section>
 

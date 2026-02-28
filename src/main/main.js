@@ -114,6 +114,75 @@ ipcMain.handle('stoklari-getir', async () => {
     });
 });
 
+// YENİ: SATIŞ / FATURA İŞLEMİ (ÇOKLU SEPET MANTIĞI - Week 3)
+ipcMain.handle('satis-yap', async (event, satisData) => {
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            db.run("BEGIN TRANSACTION", (err) => {
+                if (err) return reject(err);
+
+                // Toplam bakiyeyi müşteri hesabına yükle (İşlem 1)
+                const updateCari = db.prepare('UPDATE cariler SET bakiye = bakiye + ? WHERE id = ?');
+                updateCari.run([satisData.genel_toplam, satisData.cari_id], function (err) {
+                    if (err) {
+                        db.run("ROLLBACK");
+                        return reject(err);
+                    }
+
+                    // İşlem bittiğinde çağrılacak sayaç. Tüm ürünler bitince COMMIT yapacağız.
+                    const sepetUrunleri = satisData.sepet_icerik;
+                    let islemSayaci = 0;
+
+                    if (sepetUrunleri.length === 0) {
+                        db.run("ROLLBACK");
+                        return reject(new Error("Sepet boş, fatura kesilemez."));
+                    }
+
+                    // Stok güncelleme ve geçmiş tablosu hazırlıkları
+                    const updateStok = db.prepare('UPDATE stoklar SET stok_miktari = stok_miktari - ? WHERE id = ? AND stok_miktari >= ?');
+                    const insertIslem = db.prepare('INSERT INTO islemler (cari_id, islem_tipi, aciklama, tutar, vade_tarihi, stok_id) VALUES (?, ?, ?, ?, ?, ?)');
+
+                    sepetUrunleri.forEach((urun, index) => {
+                        // 1. Stok Düş
+                        updateStok.run([urun.adet, urun.stok_id, urun.adet], function (err) {
+                            if (err || this.changes === 0) {
+                                db.run("ROLLBACK");
+                                return reject(new Error(`Hata! '${urun.urun_adi}' için stok yetersiz veya bulunamıyor.`));
+                            }
+
+                            // 2. İşlem Geçmişine Ekle
+                            insertIslem.run([
+                                satisData.cari_id,
+                                'Satış Faturası Kalemi',
+                                `${urun.adet} Adet x ${urun.urun_adi} (${urun.kdv_orani}% KDV)`,
+                                urun.tutar,
+                                satisData.vade_tarihi || null,
+                                urun.stok_id
+                            ], function (err) {
+                                if (err) {
+                                    db.run("ROLLBACK");
+                                    return reject(err);
+                                }
+
+                                islemSayaci++;
+                                // Tüm döngü kalemleri başarılıysa
+                                if (islemSayaci === sepetUrunleri.length) {
+                                    updateStok.finalize();
+                                    insertIslem.finalize();
+                                    db.run("COMMIT", (err) => {
+                                        if (err) return reject(err);
+                                        resolve({ success: true, islemSayisi: islemSayaci });
+                                    });
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
+
 ipcMain.handle('stok-sil', async (event, id) => {
     return new Promise((resolve, reject) => {
         const stmt = db.prepare('DELETE FROM stoklar WHERE id = ?');

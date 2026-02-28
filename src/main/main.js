@@ -16,11 +16,11 @@ function createWindow() {
     win.loadFile('src/renderer/index.html');
 }
 
-// Cari Ekleme IPC kanalı
+// Cari Ekleme IPC kanalı (Güncellendi)
 ipcMain.handle('cari-ekle', async (event, veri) => {
     return new Promise((resolve, reject) => {
-        const stmt = db.prepare('INSERT INTO cariler (unvan, telefon, bakiye, durum) VALUES (?, ?, ?, ?)');
-        stmt.run([veri.unvan, veri.telefon, veri.bakiye, veri.durum], function (err) {
+        const stmt = db.prepare('INSERT INTO cariler (unvan, telefon, bakiye, durum, segment) VALUES (?, ?, ?, ?, ?)');
+        stmt.run([veri.unvan, veri.telefon, veri.bakiye, veri.durum, veri.segment || 'Standart'], function (err) {
             if (err) {
                 console.error("Veritabanı Kayıt Hatası:", err);
                 reject(err);
@@ -42,6 +42,30 @@ ipcMain.handle('carileri-getir', async () => {
             } else {
                 resolve(rows);
             }
+        });
+    });
+});
+
+// Yeni: Cari Detay ve İşlem Geçmişini Getirme
+ipcMain.handle('cari-getir-detay', async (event, cariId) => {
+    return new Promise((resolve, reject) => {
+        // Önce carinin kendisini getirelim
+        db.get('SELECT * FROM cariler WHERE id = ?', [cariId], (err, cari) => {
+            if (err) {
+                console.error("Cari Detay Hatası:", err);
+                return resolve({ cari: null, islemler: [] });
+            }
+            if (!cari) return resolve({ cari: null, islemler: [] });
+
+            // Sonra bu cariye ait işlem geçmişini getirelim
+            db.all('SELECT * FROM islemler WHERE cari_id = ? ORDER BY tarih DESC', [cariId], (err, islemler) => {
+                if (err) {
+                    console.error("Cari İşlem Geçmişi Hatası:", err);
+                    resolve({ cari, islemler: [] });
+                } else {
+                    resolve({ cari, islemler });
+                }
+            });
         });
     });
 });

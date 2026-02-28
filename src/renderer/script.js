@@ -15,17 +15,25 @@ async function carileriYukle() {
         tabloGövdesi.innerHTML = ""; // Önce tabloyu boşalt
 
         cariler.forEach(cari => {
+            // Segment rengini ayarlama
+            let segmentClass = 'bg-gray-100 text-gray-700';
+            let segmentIcon = '';
+            if (cari.segment === 'VIP') { segmentClass = 'bg-purple-100 text-purple-700 border-purple-200 border'; segmentIcon = '⭐ '; }
+            else if (cari.segment === 'Toptancı') { segmentClass = 'bg-blue-100 text-blue-700'; }
+            else if (cari.segment === 'Riskli') { segmentClass = 'bg-red-100 text-red-700 font-bold border-red-200 border'; }
+
             const satir = `
                 <tr class="hover:bg-gray-50 border-b border-gray-200 transition">
                     <td class="p-4 font-medium text-gray-800">${cari.unvan}</td>
                     <td class="p-4 text-gray-600">${cari.telefon || '-'}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-md ${segmentClass}">${segmentIcon}${cari.segment || 'Standart'}</span></td>
                     <td class="p-4 font-bold ${cari.bakiye >= 0 ? 'text-green-600' : 'text-red-600'}">
                         ₺ ${parseFloat(cari.bakiye).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                     </td>
                     <td class="p-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">${cari.durum}</span></td>
-                    <td class="p-4 text-right">
-                        <button class="text-blue-600 hover:text-blue-800 font-medium mr-3">Düzenle</button>
-                        <button onclick="cariSil(${cari.id})" class="text-red-600 hover:text-red-800 font-medium">Sil</button>
+                    <td class="p-4 text-right whitespace-nowrap">
+                        <button onclick="cariProfilAc(${cari.id})" class="text-indigo-600 hover:text-indigo-800 font-bold mr-3 bg-indigo-50 px-3 py-1.5 rounded-md transition hover:bg-indigo-100">İncele</button>
+                        <button onclick="cariSil(${cari.id})" class="text-gray-400 hover:text-red-600 font-medium transition px-2">Sil</button>
                     </td>
                 </tr>
             `;
@@ -50,6 +58,7 @@ async function cariKaydet() {
     const unvanKutusu = document.getElementById('unvan');
     const telefonKutusu = document.getElementById('phone');
     const bakiyeKutusu = document.getElementById('balance');
+    const segmentKutusu = document.getElementById('segment');
 
     if (!unvanKutusu.value) return alert("Lütfen bir unvan giriniz!");
 
@@ -57,7 +66,8 @@ async function cariKaydet() {
         unvan: unvanKutusu.value,
         telefon: telefonKutusu.value,
         bakiye: parseFloat(bakiyeKutusu.value) || 0,
-        durum: 'Alacakli'
+        durum: 'Alacakli',
+        segment: segmentKutusu ? segmentKutusu.value : 'Standart'
     };
 
     try {
@@ -83,6 +93,59 @@ async function cariSil(id) {
         } catch (error) {
             alert("Silme işlemi sırasında hata oluştu!");
         }
+    }
+}
+
+// --- MÜŞTERİ (CARİ) PROFİLİ / HESAP ÖZETİ EKRANI ---
+async function cariProfilAc(id) {
+    try {
+        const { cari, islemler } = await window.api.cariGetirDetay(id);
+        if (!cari) return alert("Müşteri bulunamadı!");
+
+        // Ekranı değiştir
+        sayfaDegistir('cari-detay', cari.unvan + ' Profili');
+
+        // Üst Kısım Bilgileri
+        document.getElementById('detayUnvan').innerText = cari.unvan;
+        document.getElementById('detaySegmentTag').innerText = cari.segment || 'Standart';
+        document.getElementById('detayBakiye').innerText = `₺ ${parseFloat(cari.bakiye).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+
+        // İşlem İstatistikleri
+        document.getElementById('detayIslemSayisi').innerText = islemler.length;
+        document.getElementById('detaySonIslem').innerText = islemler.length > 0 ? (new Date(islemler[0].tarih)).toLocaleDateString('tr-TR') : '-';
+
+        // Segment renk sınıfı
+        const tagBox = document.getElementById('detaySegmentTag');
+        tagBox.className = 'inline-block mt-2 text-xs font-semibold px-2.5 py-0.5 rounded border ';
+        if (cari.segment === 'VIP') tagBox.className += 'bg-purple-100 text-purple-800 border-purple-400';
+        else if (cari.segment === 'Riskli') tagBox.className += 'bg-red-100 text-red-800 border-red-400';
+        else tagBox.className += 'bg-blue-100 text-blue-800 border-blue-400'; // Standart/Toptancı
+
+        // İşlem Listesi Tablosu
+        const tabloGövdesi = document.getElementById('islemListesi');
+        tabloGövdesi.innerHTML = "";
+
+        if (islemler.length === 0) {
+            tabloGövdesi.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 italic">Henüz geçmiş bir işlem (alım/satım) bulunmuyor.</td></tr>`;
+        } else {
+            islemler.forEach(islem => {
+                const tarihStr = new Date(islem.tarih).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                // Satış/Tahsilat yeşil, Alış/Ödeme kırmızı mantığı (örnektir)
+                const renk = (islem.islem_tipi === 'Satış' || islem.islem_tipi === 'Tahsilat') ? 'text-green-600' : 'text-red-600';
+                const onEk = (islem.islem_tipi === 'Satış' || islem.islem_tipi === 'Tahsilat') ? '+' : '-';
+
+                tabloGövdesi.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors group">
+                        <td class="px-6 py-4 text-sm text-gray-500">${tarihStr}</td>
+                        <td class="px-6 py-4"><span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">${islem.islem_tipi}</span></td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${islem.aciklama || '-'}</td>
+                        <td class="px-6 py-4 text-sm font-bold text-right ${renk}">${onEk}₺${parseFloat(islem.tutar).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (error) {
+        console.error("Cari profil yüklenirken hata:", error);
     }
 }
 

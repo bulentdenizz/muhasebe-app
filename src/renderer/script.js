@@ -1,5 +1,5 @@
-// Sayfa yüklendiğinde carileri otomatik getir
 window.onload = () => {
+    dashboardYukle();
     carileriYukle();
     stoklariYukle();
     satisFormlariniDoldur();
@@ -9,6 +9,66 @@ window.onload = () => {
 let globalStokVerileri = [];
 let globalCariVerileri = [];
 let stokSecenekHTML = '<option value="">-- Ürün Seçin --</option>'; // Kalem selectlerini doldurmak için cache
+let dashboardChartIstance = null; // Grafik referansı
+
+async function dashboardYukle() {
+    try {
+        const data = await window.api.getDashboardData();
+
+        // 1. Text Metrikleri Güncelle
+        document.getElementById('metric-kasa').innerText = "₺ " + parseFloat(data.toplamKasa).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        document.getElementById('metric-alacak').innerText = "₺ " + parseFloat(data.gelecekOdemeler).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        document.getElementById('metric-borc').innerText = "₺ " + parseFloat(data.gecikenBorclar).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+
+        // 2. Grafiği Çiz (veya güncelle)
+        const ctx = document.getElementById('salesChart');
+        if (!ctx) return;
+
+        // Ay ve Tutar arraylerini ayır
+        const aylar = data.aylikSatislar.map(row => row.ay); // Örn: ['2023-10', '2023-11']
+        const tutarlar = data.aylikSatislar.map(row => row.toplam);
+
+        // Grafik zaten varsa yok edip yenisini çizmek daha temiz olur
+        if (dashboardChartIstance) {
+            dashboardChartIstance.destroy();
+        }
+
+        dashboardChartIstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: aylar,
+                datasets: [{
+                    label: 'Toplam Satış (₺)',
+                    data: tutarlar,
+                    backgroundColor: 'rgba(99, 102, 241, 0.5)', // indigo-500 %50
+                    borderColor: 'rgb(99, 102, 241)', // indigo-500
+                    borderWidth: 2,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return '₺' + value.toLocaleString('tr-TR');
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error("Dashboard yüklenirken hata:", err);
+    }
+}
 
 async function carileriYukle() {
     try {
@@ -83,6 +143,7 @@ async function cariKaydet() {
             alert("Müşteri başarıyla kaydedildi!");
             modalKapat();
             carileriYukle(); // Sayfayı yenilemek yerine listeyi tazele
+            dashboardYukle(); // Dashboard metrikleri (bekleyen ödemeler vs. değişebilir)
         }
     } catch (error) {
         console.error("Hata:", error);
@@ -96,6 +157,7 @@ async function cariSil(id) {
             if (sonuc.changes > 0) {
                 alert("Kayıt silindi.");
                 carileriYukle(); // Listeyi tazele
+                dashboardYukle();
             }
         } catch (error) {
             alert("Silme işlemi sırasında hata oluştu!");
@@ -468,6 +530,7 @@ async function satisIsleminiTamamla() {
             carileriYukle();
             stoklariYukle();
             satisFormlariniDoldur();
+            dashboardYukle(); // Satış yapıldı, kasa ve grafik güncellenmeli!
         }
     } catch (error) {
         alert("Satış işleminde hata oluştu!\n(Veritabanı işlemleri geri alındı)\n\n" + error);

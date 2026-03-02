@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <link href="../../dist/output.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <title>Ön Muhasebe v1.0</title>
 </head>
 
@@ -145,16 +146,24 @@
         <section id="section-anasayfa" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-blue-500 text-white p-6 rounded-xl shadow-lg">
-              <h4 class="text-lg opacity-80">Toplam Kasa</h4>
-              <p class="text-3xl font-bold">₺ 45.250,00</p>
+              <h4 class="text-lg opacity-80">Toplam Satış Hacmi</h4>
+              <p id="metric-kasa" class="text-3xl font-bold">₺ 0,00</p>
             </div>
             <div class="bg-green-500 text-white p-6 rounded-xl shadow-lg">
-              <h4 class="text-lg opacity-80">Gelecek Ödemeler</h4>
-              <p class="text-3xl font-bold">₺ 12.800,00</p>
+              <h4 class="text-lg opacity-80">Gelecek Ödemeler (Alacak)</h4>
+              <p id="metric-alacak" class="text-3xl font-bold">₺ 0,00</p>
             </div>
             <div class="bg-red-500 text-white p-6 rounded-xl shadow-lg">
-              <h4 class="text-lg opacity-80">Geciken Borçlar</h4>
-              <p class="text-3xl font-bold">₺ 3.450,00</p>
+              <h4 class="text-lg opacity-80">Geciken Borçlar (Verecek)</h4>
+              <p id="metric-borc" class="text-3xl font-bold">₺ 0,00</p>
+            </div>
+          </div>
+
+          <!-- YENİ: AYLIK SATIŞ GRAFİĞİ -->
+          <div class="bg-white rounded-xl shadow border border-gray-200 p-6 mt-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Aylık Satış Trendi (Son 6 Ay)</h3>
+            <div class="w-full h-80">
+              <canvas id="salesChart"></canvas>
             </div>
           </div>
         </section>

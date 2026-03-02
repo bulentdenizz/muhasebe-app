@@ -198,4 +198,63 @@ ipcMain.handle('stok-sil', async (event, id) => {
     });
 });
 
+// YENİ: DASHBOARD (ANA SAYFA) İSTATİSTİKLERİNİ GETİRME
+ipcMain.handle('get-dashboard-data', async () => {
+    return new Promise((resolve, reject) => {
+        const dashboardData = {
+            toplamKasa: 0,
+            gelecekOdemeler: 0,
+            gecikenBorclar: 0,
+            aylikSatislar: []
+        };
+
+        db.serialize(() => {
+            // 1. CARİ BAKİYELERİ HESAPLAMA (Gelecek ödemeler ve borçlar)
+            // Eğer müşteri bakiyesi pozitifse alacaklıyız (Gelecek ödeme), negatifse borçluyuz (Bizim borcumuz).
+            db.get(`
+                SELECT 
+                    SUM(CASE WHEN bakiye > 0 THEN bakiye ELSE 0 END) as toplamAlacak,
+                    SUM(CASE WHEN bakiye < 0 THEN ABS(bakiye) ELSE 0 END) as toplamBorc
+                FROM cariler
+            `, (err, bakiyeRow) => {
+                if (!err && bakiyeRow) {
+                    dashboardData.gelecekOdemeler = bakiyeRow.toplamAlacak || 0;
+                    dashboardData.gecikenBorclar = bakiyeRow.toplamBorc || 0;
+                }
+
+                // 2. TOPLAM KASA HESABI (Basitçe, tüm tahsilatların ve ödemelerin farkı vs. olabilir ama 
+                // şimdilik tüm satışların toplamını "Toplam Satış Hacmi" olarak gösterebiliriz veya basit bir kasa mantığı)
+                // Şimdilik sadece Satış faturalarının toplamını alalım
+                db.get(`
+                    SELECT SUM(tutar) as toplamKasa FROM islemler WHERE islem_tipi = 'Satış Faturası Kalemi'
+                `, (err, kasaRow) => {
+                    if (!err && kasaRow) {
+                        dashboardData.toplamKasa = kasaRow.toplamKasa || 0;
+                    }
+
+                    // 3. AYLIK SATIŞ GRAFİĞİ İÇİN VERİ (Son 6 Ay)
+                    // SQLite'da strftime ile aya göre gruplama yapıyoruz
+                    db.all(`
+                        SELECT 
+                            strftime('%Y-%m', tarih) as ay, 
+                            SUM(tutar) as toplam 
+                        FROM islemler 
+                        WHERE islem_tipi = 'Satış Faturası Kalemi' 
+                        GROUP BY ay 
+                        ORDER BY ay DESC 
+                        LIMIT 6
+                    `, (err, chartRows) => {
+                        if (!err && chartRows) {
+                            // Backendden grafiğe uygun formatta, ayları eskiden yeniye doğru gönderelim
+                            dashboardData.aylikSatislar = chartRows.reverse();
+                        }
+
+                        resolve(dashboardData);
+                    });
+                });
+            });
+        });
+    });
+});
+
 app.whenReady().then(createWindow);

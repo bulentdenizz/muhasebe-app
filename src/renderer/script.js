@@ -8,7 +8,7 @@ window.onload = () => {
 // Global Data Storage for easy price calculation
 let globalStokVerileri = [];
 let globalCariVerileri = [];
-let faturaSepeti = []; // SEPET DEĞİŞKENİ (Çoklu ürün listesi)
+let stokSecenekHTML = '<option value="">-- Ürün Seçin --</option>'; // Kalem selectlerini doldurmak için cache
 
 async function carileriYukle() {
     try {
@@ -287,17 +287,15 @@ function aramaYap(girdiId, tabloId) {
     }
 }
 
-// --- FATURA / SATIŞ MODÜLÜ (3. HAFTA) ---
+// --- FATURA / SATIŞ MODÜLÜ (3. HAFTA: LİSTE SİSTEMİ) ---
 
 async function satisFormlariniDoldur() {
     const cariSelect = document.getElementById('satisCariSecim');
-    const stokSelect = document.getElementById('satisStokSecim');
-
-    if (!cariSelect || !stokSelect) return;
+    if (!cariSelect) return;
 
     // Önce temizle
     cariSelect.innerHTML = '<option value="">-- Müşteri Seçin --</option>';
-    stokSelect.innerHTML = '<option value="">-- Ürün Seçin --</option>';
+    stokSecenekHTML = '<option value="">-- Ürün Seçin --</option>';
 
     // Tüm carileri getir (Global listemizi güncel çekiyoruz)
     const cariler = await window.api.carileriGetir();
@@ -310,109 +308,116 @@ async function satisFormlariniDoldur() {
     stoklar.forEach(s => {
         // Stoğu biten ürünleri göster ama engelle veya belirt
         const stokBilgisi = s.stok_miktari > 0 ? `(Stok: ${s.stok_miktari})` : `(STOKTA YOK)`;
-        stokSelect.innerHTML += `<option value="${s.id}" ${s.stok_miktari <= 0 ? 'disabled' : ''}>${s.urun_adi} - ₺${s.satis_fiyati} ${stokBilgisi}</option>`;
+        stokSecenekHTML += `<option value="${s.id}" data-fiyat="${s.satis_fiyati}" data-stok="${s.stok_miktari}" data-kdv="${s.kdv_orani}" ${s.stok_miktari <= 0 ? 'disabled' : ''}>${s.urun_adi} - ₺${s.satis_fiyati} ${stokBilgisi}</option>`;
     });
+
+    document.getElementById('faturaSatirlari').innerHTML = "";
+    faturaGenelToplamHesapla();
+    satirEkle(); // İlk açıldığında 1 adet boş satır ekle
 }
 
-function hesaplaSatisTutar() {
-    // Sadece görsellik için kalsa da kullanılmayacak; Sepet mantığında sildik.
+function satirEkle() {
+    const tbody = document.getElementById('faturaSatirlari');
+    const tr = document.createElement('tr');
+    tr.className = "hover:bg-gray-50 border-b border-gray-100 fatura-satiri";
+
+    tr.innerHTML = `
+        <td class="px-4 py-3">
+            <select class="urun-secim w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm" onchange="hesaplaSatirTutar(this)">
+                ${stokSecenekHTML}
+            </select>
+        </td>
+        <td class="px-4 py-3 text-gray-500">
+            <input type="number" readonly class="birim-fiyat w-full bg-transparent border-0 p-0 text-sm outline-none text-gray-500 font-mono" value="0.00">
+        </td>
+        <td class="px-4 py-3 font-bold">
+            <input type="number" class="satir-adet w-full border border-gray-300 p-2 text-center rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm" value="1" min="1" onchange="hesaplaSatirTutar(this)" onkeyup="hesaplaSatirTutar(this)">
+        </td>
+        <td class="px-4 py-3 font-bold text-right text-indigo-600 whitespace-nowrap">
+            <span class="satir-tutar-gosterim">₺0,00</span>
+            <input type="hidden" class="satir-tutar-deger" value="0">
+            <input type="hidden" class="satir-kdv-orani" value="0">
+        </td>
+        <td class="px-4 py-3 text-right">
+            <button onclick="satirSil(this)" class="text-red-500 hover:text-red-700 font-bold px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition">&times;</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    faturaGenelToplamHesapla();
 }
 
-function sepeteEkle() {
-    const secilenStokId = document.getElementById('satisStokSecim').value;
-    const adet = parseInt(document.getElementById('satisAdet').value) || 1;
-
-    if (!secilenStokId) return alert("Hata: Lütfen eklenecek bir ürün seçin!");
-    if (adet < 1) return alert("Hata: Geçerli bir adet girin!");
-
-    const urun = globalStokVerileri.find(s => s.id == secilenStokId);
-    if (!urun) return alert("Hata: Ürün verisi sistemde bulunamadı!");
-
-    // Stok yetersizse uyar ve engelle
-    if (urun.stok_miktari < adet) {
-        return alert(`Yetersiz Stok! Bu üründen elinizde sadece ${urun.stok_miktari} adet var.`);
-    }
-
-    // Sepette aynı üründen var mı kontrol et (Varsa adedini artır)
-    const sepettekiUrun = faturaSepeti.find(u => u.stok_id == secilenStokId);
-    if (sepettekiUrun) {
-        if (urun.stok_miktari < (sepettekiUrun.adet + adet)) {
-            return alert(`Yetersiz Stok! Bu üründen toplmada sadece ${urun.stok_miktari} satabilirsiniz.`);
-        }
-        sepettekiUrun.adet += adet;
-
-        const kdvOrani = parseFloat(urun.kdv_orani) || 0;
-        const netBirimFiyat = parseFloat(urun.satis_fiyati) || 0;
-        const hamTutar = netBirimFiyat * sepettekiUrun.adet;
-        const kdvTutari = hamTutar * (kdvOrani / 100);
-        sepettekiUrun.tutar = hamTutar + kdvTutari;
-
-    } else {
-        // Yeni ürün olarak sepete ekle
-        const kdvOrani = parseFloat(urun.kdv_orani) || 0;
-        const netBirimFiyat = parseFloat(urun.satis_fiyati) || 0;
-        const hamTutar = netBirimFiyat * adet;
-        const kdvTutari = hamTutar * (kdvOrani / 100);
-        const genelToplam = hamTutar + kdvTutari;
-
-        faturaSepeti.push({
-            stok_id: urun.id,
-            urun_adi: urun.urun_adi,
-            kdv_orani: kdvOrani,
-            net_birim_fiyat: netBirimFiyat,
-            adet: adet,
-            tutar: genelToplam
-        });
-    }
-
-    // Formu temizle ve sepeti çiz
-    document.getElementById('satisStokSecim').value = "";
-    document.getElementById('satisAdet').value = "1";
-    sepetiCiz();
+function satirSil(btn) {
+    const satir = btn.closest('tr');
+    satir.remove();
+    faturaGenelToplamHesapla();
 }
 
-function sepettenCikar(index) {
-    faturaSepeti.splice(index, 1);
-    sepetiCiz();
-}
+function hesaplaSatirTutar(element) {
+    const satir = element.closest('tr');
+    const select = satir.querySelector('.urun-secim');
+    const adetInput = satir.querySelector('.satir-adet');
+    const birimFiyatInput = satir.querySelector('.birim-fiyat');
+    const tutarGosterim = satir.querySelector('.satir-tutar-gosterim');
+    const tutarDeger = satir.querySelector('.satir-tutar-deger');
+    const kdvDeger = satir.querySelector('.satir-kdv-orani');
 
-function sepetiCiz() {
-    const tabloGövdesi = document.getElementById('sepetListesi');
-    const genelToplamLabel = document.getElementById('genelToplamTutar');
-    const sepetSayisiLabel = document.getElementById('sepetUrunSayisi');
+    const secilenOption = select.options[select.selectedIndex];
 
-    tabloGövdesi.innerHTML = "";
-    let sepetGenelToplami = 0;
-
-    if (faturaSepeti.length === 0) {
-        tabloGövdesi.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400 italic">Sepete henüz ürün eklenmedi.</td></tr>`;
-        genelToplamLabel.innerText = "₺ 0,00";
-        genelToplamLabel.setAttribute('data-hesaplanan', '0');
-        sepetSayisiLabel.innerText = "0 Ürün";
+    if (!secilenOption || !secilenOption.value) {
+        birimFiyatInput.value = "0.00";
+        tutarGosterim.innerText = "₺0,00";
+        tutarDeger.value = "0";
+        kdvDeger.value = "0";
+        faturaGenelToplamHesapla();
         return;
     }
 
-    faturaSepeti.forEach((kalem, index) => {
-        sepetGenelToplami += kalem.tutar;
-        const birimFiyat = kalem.net_birim_fiyat.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-        const yekunTutar = kalem.tutar.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+    const fiyat = parseFloat(secilenOption.getAttribute('data-fiyat')) || 0;
+    const mevcutStok = parseInt(secilenOption.getAttribute('data-stok')) || 0;
+    const kdv = parseFloat(secilenOption.getAttribute('data-kdv')) || 0;
+    let adet = parseInt(adetInput.value) || 1;
 
-        tabloGövdesi.innerHTML += `
-            <tr class="hover:bg-gray-50 border-b border-gray-100">
-                <td class="px-4 py-3">${kalem.urun_adi}</td>
-                <td class="px-4 py-3 text-gray-500">₺${birimFiyat}</td>
-                <td class="px-4 py-3 font-bold">${kalem.adet}</td>
-                <td class="px-4 py-3 font-bold text-right text-indigo-600">₺${yekunTutar}</td>
-                <td class="px-4 py-3 text-right">
-                    <button onclick="sepettenCikar(${index})" class="text-red-500 hover:text-red-700 font-bold px-2">&times;</button>
-                </td>
-            </tr>
-        `;
+    // Stok kontrolü (uyarı verir, düzeltir)
+    if (adet > mevcutStok) {
+        alert("Uyarı: Yeterli stok yok! (Mevcut: " + mevcutStok + ")");
+        adet = mevcutStok;
+        adetInput.value = adet;
+    }
+
+    birimFiyatInput.value = fiyat.toFixed(2);
+    kdvDeger.value = kdv;
+
+    // Tutar = (Fiyat * Adet) + KDV
+    const hamTutar = fiyat * adet;
+    const kdvTutari = hamTutar * (kdv / 100);
+    const toplamTutar = hamTutar + kdvTutari;
+
+    tutarGosterim.innerText = "₺" + toplamTutar.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    tutarDeger.value = toplamTutar;
+
+    faturaGenelToplamHesapla();
+}
+
+function faturaGenelToplamHesapla() {
+    const satirlar = document.querySelectorAll('.fatura-satiri');
+    let genelToplam = 0;
+    let doluSatirSayisi = 0;
+
+    satirlar.forEach(satir => {
+        const urun = satir.querySelector('.urun-secim').value;
+        if (urun) {
+            const tutar = parseFloat(satir.querySelector('.satir-tutar-deger').value) || 0;
+            genelToplam += tutar;
+            doluSatirSayisi++;
+        }
     });
 
-    genelToplamLabel.innerText = "₺ " + sepetGenelToplami.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-    genelToplamLabel.setAttribute('data-hesaplanan', sepetGenelToplami);
-    sepetSayisiLabel.innerText = `${faturaSepeti.length} Ürün`;
+    const genelToplamLabel = document.getElementById('genelToplamTutar');
+    const sepetSayisiLabel = document.getElementById('sepetUrunSayisi');
+
+    genelToplamLabel.innerText = "₺ " + genelToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    genelToplamLabel.setAttribute('data-hesaplanan', genelToplam);
+    sepetSayisiLabel.innerText = `${doluSatirSayisi} Kalem`;
 }
 
 async function satisIsleminiTamamla() {
@@ -421,28 +426,45 @@ async function satisIsleminiTamamla() {
     const genelToplam = parseFloat(document.getElementById('genelToplamTutar').getAttribute('data-hesaplanan'));
 
     if (!cariId) return alert("Hata: Lütfen faturanın kesileceği Müşteriyi (Cari) seçin!");
-    if (faturaSepeti.length === 0) return alert("Hata: Sepette hiç ürün bulunmuyor, fatura oluşturulamaz.");
 
-    // Backend'e gönderilecek paket (Çoklu Kalem Mantığı)
+    // Satırlardaki veriyi toplayalım
+    const satirlar = document.querySelectorAll('.fatura-satiri');
+    const toplananListe = [];
+
+    satirlar.forEach(satir => {
+        const select = satir.querySelector('.urun-secim');
+        const secilenOption = select.options[select.selectedIndex];
+
+        if (secilenOption && secilenOption.value) {
+            toplananListe.push({
+                stok_id: secilenOption.value,
+                urun_adi: secilenOption.text.split(' - ')[0], // Adı ayıklayalım
+                kdv_orani: parseFloat(secilenOption.getAttribute('data-kdv')) || 0,
+                net_birim_fiyat: parseFloat(secilenOption.getAttribute('data-fiyat')) || 0,
+                adet: parseInt(satir.querySelector('.satir-adet').value) || 1,
+                tutar: parseFloat(satir.querySelector('.satir-tutar-deger').value) || 0
+            });
+        }
+    });
+
+    if (toplananListe.length === 0) return alert("Hata: Faturada en az bir geçerli ürün seçili olmalıdır.");
+
     const faturaPaketi = {
         cari_id: cariId,
         vade_tarihi: vadeTarihi || null,
         genel_toplam: genelToplam,
-        sepet_icerik: faturaSepeti
+        sepet_icerik: toplananListe // Backend tarafı 'sepet_icerik' ismi bekliyordu
     };
 
     try {
         const sonuc = await window.api.satisYap(faturaPaketi);
         if (sonuc.success) {
-            alert(`Fatura başarıyla kesildi! (${sonuc.islemSayisi} adet kalem işlendi.)`);
+            alert(`Fatura başarıyla kaydedildi! (${sonuc.islemSayisi} adet kalem işlendi.)`);
 
-            // Sepeti Boşalt ve Formları Sıfırla
-            faturaSepeti = [];
-            sepetiCiz();
             document.getElementById('satisCariSecim').value = "";
             document.getElementById('satisVade').value = "";
 
-            // Güncel verileri tazele
+            // Güncel verileri tazele (bu aynı zamanda tabloyu temizleyip 1 satırla başlatacak)
             carileriYukle();
             stoklariYukle();
             satisFormlariniDoldur();

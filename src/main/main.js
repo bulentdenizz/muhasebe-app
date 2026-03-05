@@ -2,6 +2,9 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const db = require('../database/db');
 
+// Disable Hardware Acceleration for UI/Input glitches on some Windows machines
+app.disableHardwareAcceleration();
+
 function createWindow() {
     const win = new BrowserWindow({
         width: 1200,
@@ -82,6 +85,51 @@ ipcMain.handle('cari-sil', async (event, id) => {
             }
         });
         stmt.finalize();
+    });
+});
+
+ipcMain.handle('islem-ekle', async (event, veri) => {
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            db.run("BEGIN TRANSACTION");
+
+            // 1. İşlem Kaydı
+            const stmt = db.prepare('INSERT INTO islemler (cari_id, islem_tipi, aciklama, tutar, tarih) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)');
+            stmt.run([veri.cari_id, veri.islem_tipi, veri.aciklama, veri.tutar], function (err) {
+                if (err) {
+                    db.run("ROLLBACK");
+                    console.error("İşlem Ekleme Hatası:", err);
+                    return reject(err);
+                }
+
+                // 2. Cari Bakiyesi Güncelleme Mantığı
+                // Bakiye bizim gözümüzden: Pozitifse alacaklıyız (müşteri bize borçlu).
+                // Tahsilat (+ para girdi), borcu azaltır (-)
+                // Ödeme (Bizden para çıktı), müşterinin bize olan alacağını artırır (+)
+                // Borçlandırma (Müşteriyi borçlandırma), bakiyeyi artırır (+)
+                // Alacaklandırma (Müşteriden borç düşme), bakiyeyi azaltır (-)
+
+                let bakiyeDegisiklik = 0;
+                if (veri.islem_tipi === 'Tahsilat' || veri.islem_tipi === 'Alacaklandırma') {
+                    bakiyeDegisiklik = -Math.abs(veri.tutar); // Bakiye düşer
+                } else if (veri.islem_tipi === 'Ödeme' || veri.islem_tipi === 'Borçlandırma') {
+                    bakiyeDegisiklik = Math.abs(veri.tutar); // Bakiye artar
+                }
+
+                const updateStmt = db.prepare('UPDATE cariler SET bakiye = bakiye + ? WHERE id = ?');
+                updateStmt.run([bakiyeDegisiklik, veri.cari_id], function (err) {
+                    if (err) {
+                        db.run("ROLLBACK");
+                        return reject(err);
+                    }
+
+                    db.run("COMMIT");
+                    resolve({ success: true, changes: this.changes });
+                });
+                updateStmt.finalize();
+            });
+            stmt.finalize();
+        });
     });
 });
 

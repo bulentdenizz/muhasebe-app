@@ -11,5 +11,6 @@ contextBridge.exposeInMainWorld('api', {
     stokGetirDetay: (id) => ipcRenderer.invoke('stok-getir-detay', id),
     stokSil: (id) => ipcRenderer.invoke('stok-sil', id),
     satisYap: (veri) => ipcRenderer.invoke('satis-yap', veri),
-    getDashboardData: () => ipcRenderer.invoke('get-dashboard-data')
+    getDashboardData: () => ipcRenderer.invoke('get-dashboard-data'),
+    islemEkle: (veri) => ipcRenderer.invoke('islem-ekle', veri)
 });

@@ -112,7 +112,10 @@ async function carileriYukle() {
 }
 
 // --- Senin Mevcut Fonksiyonların (Aynen Kalsın) ---
-function modalAc() { document.getElementById('cariModal').classList.remove('hidden'); }
+function modalAc() {
+    document.getElementById('cariModal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('unvan').focus(), 100);
+}
 function modalKapat() { document.getElementById('cariModal').classList.add('hidden'); }
 
 function sayfaDegistir(sayfaId, baslik) {
@@ -175,6 +178,7 @@ async function cariProfilAc(id) {
         sayfaDegistir('cari-detay', cari.unvan + ' Profili');
 
         // Üst Kısım Bilgileri
+        document.getElementById('islem_cari_id').value = cari.id; // Fiş modalı için ID'yi saklıyoruz
         document.getElementById('detayUnvan').innerText = cari.unvan;
         document.getElementById('detaySegmentTag').innerText = cari.segment || 'Standart';
         document.getElementById('detayBakiye').innerText = `₺ ${parseFloat(cari.bakiye).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
@@ -215,6 +219,54 @@ async function cariProfilAc(id) {
         }
     } catch (error) {
         console.error("Cari profil yüklenirken hata:", error);
+    }
+}
+
+function islemModalAc(cariId) {
+    if (!cariId) return;
+    document.getElementById('islem_cari_id').value = cariId;
+    document.getElementById('islem_tutar').value = '';
+    document.getElementById('islem_aciklama').value = '';
+    document.getElementById('islemModal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('islem_tutar').focus(), 100);
+}
+
+function islemModalKapat() {
+    document.getElementById('islemModal').classList.add('hidden');
+}
+
+async function islemKaydet() {
+    const cariId = document.getElementById('islem_cari_id').value;
+    const islemTipi = document.getElementById('islem_tipi').value;
+    const tutar = parseFloat(document.getElementById('islem_tutar').value) || 0;
+    const aciklama = document.getElementById('islem_aciklama').value;
+
+    if (!cariId) return alert("Cari bilgisi alınamadı!");
+    if (tutar <= 0) return alert("Geçerli bir tutar girmelisiniz!");
+
+    const veri = {
+        cari_id: cariId,
+        islem_tipi: islemTipi,
+        tutar: tutar,
+        aciklama: aciklama
+    };
+
+    try {
+        const sonuc = await window.api.islemEkle(veri);
+        if (sonuc.success) {
+            alert("İşlem başarıyla kaydedildi!");
+            islemModalKapat();
+
+            // Ekranları tazeliyoruz
+            cariProfilAc(cariId); // Mevcut profili yenile
+            carileriYukle(); // Genel cari listeyi arka planda yenile
+            dashboardYukle(); // Kasa/Bakiye özetleri değişmiş olabilir
+        } else {
+            alert("İşlem kaydedilemedi!");
+        }
+    } catch (error) {
+        console.error("İşlem kaydetme hatası:", error);
+        alert("İşlem sırasında hata oluştu:\n" + error);
     }
 }
 
@@ -260,6 +312,7 @@ function stokModalAc(stokId = null) {
     }
 
     document.getElementById('stokModal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('urun_adi').focus(), 100);
 }
 function stokModalKapat() { document.getElementById('stokModal').classList.add('hidden'); }
 

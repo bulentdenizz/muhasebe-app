@@ -66,10 +66,11 @@
     <div
       class="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all border border-gray-200">
       <div class="p-6 border-b bg-gray-50 rounded-t-xl">
-        <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Ürün Kartı</h3>
+        <h3 id="stokModalBaslik" class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Ürün Kartı</h3>
       </div>
 
       <div class="p-6 grid grid-cols-2 gap-5">
+        <input type="hidden" id="edit_stok_id" value="">
         <div class="col-span-2">
           <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ürün Adı</label>
           <input type="text" id="urun_adi" placeholder="Örn: Laptop - Asus ROG"
@@ -110,7 +111,7 @@
       <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
         <button onclick="stokModalKapat()"
           class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-200 rounded-lg transition">Vazgeç</button>
-        <button onclick="stokKaydet()"
+        <button id="stokKaydetBtn" onclick="stokKaydet()"
           class="px-6 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-lg shadow-green-200 transition active:scale-95">Ürünü
           Kaydet</button>
       </div>

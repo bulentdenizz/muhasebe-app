@@ -101,6 +101,21 @@ ipcMain.handle('stok-ekle', async (event, veri) => {
     });
 });
 
+ipcMain.handle('stok-guncelle', async (event, veri) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare('UPDATE stoklar SET urun_adi = ?, barkod = ?, alis_fiyati = ?, satis_fiyati = ?, kdv_orani = ?, stok_miktari = ? WHERE id = ?');
+        stmt.run([veri.urun_adi, veri.barkod, veri.alis_fiyati, veri.satis_fiyati, veri.kdv_orani, veri.stok_miktari, veri.id], function (err) {
+            if (err) {
+                console.error("Stok Güncelleme Hatası:", err);
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+        stmt.finalize();
+    });
+});
+
 ipcMain.handle('stoklari-getir', async () => {
     return new Promise((resolve, reject) => {
         db.all('SELECT * FROM stoklar ORDER BY id DESC', [], (err, rows) => {

@@ -220,7 +220,47 @@ async function cariProfilAc(id) {
 
 // --- STOK MODÜLÜ (2. HAFTA) ---
 
-function stokModalAc() { document.getElementById('stokModal').classList.remove('hidden'); }
+function stokModalAc(stokId = null) {
+    const adKutu = document.getElementById('urun_adi');
+    const barkodKutu = document.getElementById('barkod');
+    const alisKutu = document.getElementById('alis_fiyati');
+    const satisKutu = document.getElementById('satis_fiyati');
+    const kdvKutu = document.getElementById('kdv_orani');
+    const stokKutu = document.getElementById('stok_miktari');
+    const baslik = document.getElementById('stokModalBaslik');
+    const submitBtn = document.getElementById('stokKaydetBtn');
+
+    if (stokId) {
+        const stok = globalStokVerileri.find(s => s.id === stokId);
+        if (!stok) return;
+
+        document.getElementById('edit_stok_id').value = stok.id;
+        adKutu.value = stok.urun_adi;
+        barkodKutu.value = stok.barkod || '';
+        alisKutu.value = stok.alis_fiyati;
+        satisKutu.value = stok.satis_fiyati;
+        kdvKutu.value = stok.kdv_orani;
+        stokKutu.value = stok.stok_miktari;
+
+        baslik.innerText = "Ürün Düzenle";
+        submitBtn.innerText = "Güncelle";
+        submitBtn.setAttribute('onclick', 'stokGuncelle()');
+    } else {
+        document.getElementById('edit_stok_id').value = "";
+        adKutu.value = "";
+        barkodKutu.value = "";
+        alisKutu.value = "0";
+        satisKutu.value = "0";
+        stokKutu.value = "0";
+        kdvKutu.value = "20";
+
+        baslik.innerText = "Yeni Ürün Kartı";
+        submitBtn.innerText = "Ürünü Kaydet";
+        submitBtn.setAttribute('onclick', 'stokKaydet()');
+    }
+
+    document.getElementById('stokModal').classList.remove('hidden');
+}
 function stokModalKapat() { document.getElementById('stokModal').classList.add('hidden'); }
 
 async function stoklariYukle() {
@@ -250,7 +290,7 @@ async function stoklariYukle() {
                     <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold">%${stok.kdv_orani}</span></td>
                     <td class="p-4 text-right">
                         <button onclick="stokProfilAc(${stok.id})" class="text-indigo-600 hover:text-indigo-800 font-bold mr-3 bg-indigo-50 px-3 py-1.5 rounded-md transition hover:bg-indigo-100">İncele</button>
-                        <button class="text-blue-600 hover:text-blue-800 font-medium mr-3">Düzenle</button>
+                        <button onclick="stokModalAc(${stok.id})" class="text-blue-600 hover:text-blue-800 font-medium mr-3">Düzenle</button>
                         <button onclick="stokSil(${stok.id})" class="text-red-600 hover:text-red-800 font-medium">Sil</button>
                     </td>
                 </tr>
@@ -259,6 +299,39 @@ async function stoklariYukle() {
         });
     } catch (error) {
         console.error("Stok Listeleme hatası:", error);
+    }
+}
+
+async function stokGuncelle() {
+    const editId = document.getElementById('edit_stok_id').value;
+    const adKutu = document.getElementById('urun_adi');
+    const barkodKutu = document.getElementById('barkod');
+    const alisKutu = document.getElementById('alis_fiyati');
+    const satisKutu = document.getElementById('satis_fiyati');
+    const kdvKutu = document.getElementById('kdv_orani');
+    const stokKutu = document.getElementById('stok_miktari');
+
+    if (!adKutu.value) return alert("Lütfen bir Ürün Adı giriniz!");
+
+    const veri = {
+        id: editId,
+        urun_adi: adKutu.value,
+        barkod: barkodKutu.value,
+        alis_fiyati: parseFloat(alisKutu.value) || 0,
+        satis_fiyati: parseFloat(satisKutu.value) || 0,
+        kdv_orani: parseInt(kdvKutu.value) || 18,
+        stok_miktari: parseInt(stokKutu.value) || 0
+    };
+
+    try {
+        const sonuc = await window.api.stokGuncelle(veri);
+        if (sonuc.changes > 0) {
+            alert("Ürün başarıyla güncellendi!");
+            stokModalKapat();
+            stoklariYukle();
+        }
+    } catch (error) {
+        console.error("Stok Güncelleme Hatası:", error);
     }
 }
 

@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('api', {
     cariGetirDetay: (id) => ipcRenderer.invoke('cari-getir-detay', id),
     cariSil: (id) => ipcRenderer.invoke('cari-sil', id),
     stokEkle: (veriler) => ipcRenderer.invoke('stok-ekle', veriler),
+    stokGuncelle: (veriler) => ipcRenderer.invoke('stok-guncelle', veriler),
     stoklariGetir: () => ipcRenderer.invoke('stoklari-getir'),
     stokGetirDetay: (id) => ipcRenderer.invoke('stok-getir-detay', id),
     stokSil: (id) => ipcRenderer.invoke('stok-sil', id),

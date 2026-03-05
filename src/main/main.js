@@ -198,6 +198,33 @@ ipcMain.handle('stok-sil', async (event, id) => {
     });
 });
 
+ipcMain.handle('stok-getir-detay', async (event, stokId) => {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM stoklar WHERE id = ?', [stokId], (err, stok) => {
+            if (err) {
+                console.error("Stok Detay Hatası:", err);
+                return resolve({ stok: null, islemler: [] });
+            }
+            if (!stok) return resolve({ stok: null, islemler: [] });
+
+            db.all(`
+                SELECT islemler.*, cariler.unvan 
+                FROM islemler 
+                LEFT JOIN cariler ON islemler.cari_id = cariler.id 
+                WHERE islemler.stok_id = ? 
+                ORDER BY islemler.tarih DESC
+            `, [stokId], (err, islemler) => {
+                if (err) {
+                    console.error("Stok İşlem Geçmişi Hatası:", err);
+                    resolve({ stok, islemler: [] });
+                } else {
+                    resolve({ stok, islemler });
+                }
+            });
+        });
+    });
+});
+
 // YENİ: DASHBOARD (ANA SAYFA) İSTATİSTİKLERİNİ GETİRME
 ipcMain.handle('get-dashboard-data', async () => {
     return new Promise((resolve, reject) => {

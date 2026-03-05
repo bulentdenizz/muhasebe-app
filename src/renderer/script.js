@@ -249,6 +249,7 @@ async function stoklariYukle() {
                     </td>
                     <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold">%${stok.kdv_orani}</span></td>
                     <td class="p-4 text-right">
+                        <button onclick="stokProfilAc(${stok.id})" class="text-indigo-600 hover:text-indigo-800 font-bold mr-3 bg-indigo-50 px-3 py-1.5 rounded-md transition hover:bg-indigo-100">İncele</button>
                         <button class="text-blue-600 hover:text-blue-800 font-medium mr-3">Düzenle</button>
                         <button onclick="stokSil(${stok.id})" class="text-red-600 hover:text-red-800 font-medium">Sil</button>
                     </td>
@@ -311,6 +312,54 @@ async function stokSil(id) {
         } catch (error) {
             alert("Silme işlemi sırasında hata oluştu!");
         }
+    }
+}
+
+// --- STOK PROFİLİ / GEÇMİŞ İŞLEMLER ---
+async function stokProfilAc(id) {
+    try {
+        const { stok, islemler } = await window.api.stokGetirDetay(id);
+        if (!stok) return alert("Ürün bulunamadı!");
+
+        sayfaDegistir('stok-detay', stok.urun_adi + ' Profili');
+
+        document.getElementById('detayStokAdi').innerText = stok.urun_adi;
+        document.getElementById('detayStokBarkod').innerText = stok.barkod || 'Barkod Yok';
+        document.getElementById('detayStokMiktar').innerText = `${stok.stok_miktari} Adet`;
+
+        const alisGosterim = parseFloat(stok.alis_fiyati).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        const satisGosterim = parseFloat(stok.satis_fiyati).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        document.getElementById('detayStokFiyat').innerText = `₺${alisGosterim} / ₺${satisGosterim}`;
+
+        const detayStokMiktarEl = document.getElementById('detayStokMiktar');
+        if (stok.stok_miktari <= 0) {
+            detayStokMiktarEl.className = 'text-2xl font-bold mt-1 text-red-600';
+        } else {
+            detayStokMiktarEl.className = 'text-2xl font-bold mt-1 text-green-600';
+        }
+
+        const tabloGövdesi = document.getElementById('stokIslemListesi');
+        tabloGövdesi.innerHTML = "";
+
+        if (islemler.length === 0) {
+            tabloGövdesi.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 italic">Bu ürüne ait geçmiş bir işlem bulunmuyor.</td></tr>`;
+        } else {
+            islemler.forEach(islem => {
+                const tarihStr = new Date(islem.tarih).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const unvanStr = islem.unvan ? islem.unvan : 'Bilinmeyen Müşteri';
+
+                tabloGövdesi.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors group">
+                        <td class="px-6 py-4 text-sm text-gray-500">${tarihStr}</td>
+                        <td class="px-6 py-4"><span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">${islem.islem_tipi}</span></td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${islem.aciklama || '-'} <br><span class="text-xs text-gray-500">Müşteri: ${unvanStr}</span></td>
+                        <td class="px-6 py-4 text-sm font-bold text-right text-gray-800">₺${parseFloat(islem.tutar).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (error) {
+        console.error("Stok profil yüklenirken hata:", error);
     }
 }
 

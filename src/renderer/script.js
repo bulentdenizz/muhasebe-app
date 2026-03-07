@@ -565,7 +565,7 @@ function satirEkle() {
             </select>
         </td>
         <td class="px-4 py-3 text-gray-500">
-            <input type="number" readonly class="birim-fiyat w-full bg-transparent border-0 p-0 text-sm outline-none text-gray-500 font-mono" value="0.00">
+            <input type="number" step="0.01" class="birim-fiyat w-full border border-gray-300 p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm text-gray-700 font-bold" value="0.00" onchange="hesaplaSatirTutar(this, true)" onkeyup="hesaplaSatirTutar(this, true)">
         </td>
         <td class="px-4 py-3 font-bold">
             <input type="number" class="satir-adet w-full border border-gray-300 p-2 text-center rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm" value="1" min="1" onchange="hesaplaSatirTutar(this)" onkeyup="hesaplaSatirTutar(this)">
@@ -589,7 +589,7 @@ function satirSil(btn) {
     faturaGenelToplamHesapla();
 }
 
-function hesaplaSatirTutar(element) {
+function hesaplaSatirTutar(element, fiyatManuelDegisti = false) {
     const satir = element.closest('tr');
     const select = satir.querySelector('.urun-secim');
     const adetInput = satir.querySelector('.satir-adet');
@@ -609,7 +609,13 @@ function hesaplaSatirTutar(element) {
         return;
     }
 
-    const fiyat = parseFloat(secilenOption.getAttribute('data-fiyat')) || 0;
+    // Fiyat manuel değiştirilmediyse listedeki varsayılan fiyatı al
+    let fiyat = parseFloat(birimFiyatInput.value) || 0;
+    if (!fiyatManuelDegisti) {
+        fiyat = parseFloat(secilenOption.getAttribute('data-fiyat')) || 0;
+        birimFiyatInput.value = fiyat.toFixed(2);
+    }
+
     const mevcutStok = parseInt(secilenOption.getAttribute('data-stok')) || 0;
     const kdv = parseFloat(secilenOption.getAttribute('data-kdv')) || 0;
     let adet = parseInt(adetInput.value) || 1;
@@ -621,7 +627,7 @@ function hesaplaSatirTutar(element) {
         adetInput.value = adet;
     }
 
-    birimFiyatInput.value = fiyat.toFixed(2);
+    birimFiyatInput.value = fiyat; // Manuel girildiği için toFixed'i kaldırırız ki kullanıcı sildikçe bozulmasın, string olarak kalır
     kdvDeger.value = kdv;
 
     // Tutar = (Fiyat * Adet) + KDV
@@ -673,11 +679,12 @@ async function satisIsleminiTamamla() {
         const secilenOption = select.options[select.selectedIndex];
 
         if (secilenOption && secilenOption.value) {
+            const girilenFiyat = parseFloat(satir.querySelector('.birim-fiyat').value) || 0;
             toplananListe.push({
                 stok_id: secilenOption.value,
                 urun_adi: secilenOption.text.split(' - ')[0], // Adı ayıklayalım
                 kdv_orani: parseFloat(secilenOption.getAttribute('data-kdv')) || 0,
-                net_birim_fiyat: parseFloat(secilenOption.getAttribute('data-fiyat')) || 0,
+                net_birim_fiyat: girilenFiyat, // Artık manuel girilen fiyatı alıyoruz
                 adet: parseInt(satir.querySelector('.satir-adet').value) || 1,
                 tutar: parseFloat(satir.querySelector('.satir-tutar-deger').value) || 0
             });

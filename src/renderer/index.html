@@ -152,13 +152,8 @@
         </div>
         <div class="col-span-2">
           <label class="block text-xs font-bold text-gray-500 uppercase mb-1">KDV Oranı (%)</label>
-          <select id="kdv_orani"
+          <input type="number" id="kdv_orani" value="20" min="0" max="100"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
-            <option value="0">%0</option>
-            <option value="1">%1</option>
-            <option value="10">%10</option>
-            <option value="20" selected>%20</option>
-          </select>
         </div>
       </div>
 
@@ -199,26 +194,104 @@
       <div class="flex-1 p-8 overflow-y-auto">
 
         <section id="section-anasayfa" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-blue-500 text-white p-6 rounded-xl shadow-lg">
-              <h4 class="text-lg opacity-80">Toplam Satış Hacmi</h4>
-              <p id="metric-kasa" class="text-3xl font-bold">₺ 0,00</p>
-            </div>
-            <div class="bg-green-500 text-white p-6 rounded-xl shadow-lg">
-              <h4 class="text-lg opacity-80">Gelecek Ödemeler (Alacak)</h4>
-              <p id="metric-alacak" class="text-3xl font-bold">₺ 0,00</p>
-            </div>
-            <div class="bg-red-500 text-white p-6 rounded-xl shadow-lg">
-              <h4 class="text-lg opacity-80">Geciken Borçlar (Verecek)</h4>
-              <p id="metric-borc" class="text-3xl font-bold">₺ 0,00</p>
-            </div>
-          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Sol Taraf: Tahsilat ve Ödemeler (2 Kolon Genişliğinde) -->
+            <div class="col-span-1 lg:col-span-2 space-y-6">
 
-          <!-- YENİ: AYLIK SATIŞ GRAFİĞİ -->
-          <div class="bg-white rounded-xl shadow border border-gray-200 p-6 mt-8">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Aylık Satış Trendi (Son 6 Ay)</h3>
-            <div class="w-full h-80">
-              <canvas id="salesChart"></canvas>
+              <!-- Tahsilatlar Kutusu -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 border-b border-gray-200 px-6 py-3">
+                  <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Tahsilatlar</h3>
+                </div>
+                <div
+                  class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
+
+                  <!-- Toplam Tahsil Edilecek -->
+                  <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Toplam Tahsil Edilecek</span>
+                    <div
+                      class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-l-blue-500 border-t-blue-500 border-r-blue-500 flex items-center justify-center shadow-inner">
+                      <span id="metric-alacak" class="text-lg font-black text-gray-800">₺ 0,00</span>
+                    </div>
+                  </div>
+
+                  <!-- Gecikmiş (Şimdilik boş/statik) -->
+                  <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Gecikmiş</span>
+                    <div
+                      class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-t-red-500 border-r-red-500 flex items-center justify-center shadow-inner">
+                      <span class="text-lg font-bold text-red-500">-</span>
+                    </div>
+                  </div>
+
+                  <!-- Kasa Durumu (Ekstra Metrik Olarak) -->
+                  <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Kasa (Satış Hacmi)</span>
+                    <div
+                      class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-blue-200 flex items-center justify-center shadow-inner">
+                      <span id="metric-kasa" class="text-lg font-bold text-gray-600">₺ 0,00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ödemeler Kutusu -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 border-b border-gray-200 px-6 py-3">
+                  <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Ödemeler</h3>
+                </div>
+                <div
+                  class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
+
+                  <!-- Toplam Ödenecek -->
+                  <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Toplam Ödenecek</span>
+                    <div
+                      class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-l-gray-500 border-b-gray-500 border-r-gray-500 flex items-center justify-center shadow-inner">
+                      <span id="metric-borc" class="text-lg font-black text-gray-800">₺ 0,00</span>
+                    </div>
+                  </div>
+
+                  <!-- Gecikmiş (Şimdilik boş/statik) -->
+                  <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Gecikmiş</span>
+                    <div class="flex items-center justify-center mt-6">
+                      <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7">
+                          </path>
+                        </svg>
+                      </div>
+                    </div>
+                    <span class="text-xs text-gray-400 font-bold mt-2">ÖDEME YOK</span>
+                  </div>
+
+                  <!-- Planlanmamış -->
+                  <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Planlanmamış</span>
+                    <div class="flex items-center justify-center mt-6">
+                      <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7">
+                          </path>
+                        </svg>
+                      </div>
+                    </div>
+                    <span class="text-xs text-gray-400 font-bold mt-2">FATURA YOK</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sağ Taraf: İstatistikler ve Grafikler (1 Kolon Genişliğinde) -->
+            <div class="col-span-1 space-y-6">
+              <!-- Satış Grafiği -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4">Aylık Satış Trendi</h3>
+                <div class="flex-1 w-full min-h-[250px] relative">
+                  <canvas id="salesChart"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -480,8 +553,24 @@
                 </select>
 
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Vade Tarihi (Opsiyonel)</label>
-                <input type="date" id="satisVade"
-                  class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition mb-4">
+                <div class="space-y-2">
+                  <input type="date" id="satisVade"
+                    class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                  <div class="flex space-x-2">
+                    <button type="button" onclick="vadeEkle(7)"
+                      class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">7
+                      Gün</button>
+                    <button type="button" onclick="vadeEkle(15)"
+                      class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">15
+                      Gün</button>
+                    <button type="button" onclick="vadeEkle(30)"
+                      class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">30
+                      Gün</button>
+                    <button type="button" onclick="vadeEkle(60)"
+                      class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">60
+                      Gün</button>
+                  </div>
+                </div>
 
                 <h3 class="text-sm font-bold text-gray-500 uppercase border-b pb-2 mb-4 mt-6">Genel Toplam Özeti</h3>
                 <div class="flex justify-between items-center bg-white p-4 rounded-lg border border-gray-200">

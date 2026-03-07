@@ -372,7 +372,7 @@ async function stokGuncelle() {
         barkod: barkodKutu.value,
         alis_fiyati: parseFloat(alisKutu.value) || 0,
         satis_fiyati: parseFloat(satisKutu.value) || 0,
-        kdv_orani: parseInt(kdvKutu.value) || 18,
+        kdv_orani: parseInt(kdvKutu.value) || 20,
         stok_miktari: parseInt(stokKutu.value) || 0
     };
 
@@ -403,7 +403,7 @@ async function stokKaydet() {
         barkod: barkodKutu.value,
         alis_fiyati: parseFloat(alisKutu.value) || 0,
         satis_fiyati: parseFloat(satisKutu.value) || 0,
-        kdv_orani: parseInt(kdvKutu.value) || 18,
+        kdv_orani: parseInt(kdvKutu.value) || 20,
         stok_miktari: parseInt(stokKutu.value) || 0
     };
 
@@ -661,6 +661,20 @@ function faturaGenelToplamHesapla() {
     genelToplamLabel.innerText = "₺ " + genelToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     genelToplamLabel.setAttribute('data-hesaplanan', genelToplam);
     sepetSayisiLabel.innerText = `${doluSatirSayisi} Kalem`;
+}
+
+// Yeni Vade Tarihi Hesaplama Fonksiyonu
+function vadeEkle(gunSayisi) {
+    const vadeInput = document.getElementById('satisVade');
+    const bugun = new Date();
+    bugun.setDate(bugun.getDate() + gunSayisi);
+
+    // API beklenen formatını yyyy-mm-dd elde edelim
+    const yil = bugun.getFullYear();
+    const ay = String(bugun.getMonth() + 1).padStart(2, '0');
+    const gun = String(bugun.getDate()).padStart(2, '0');
+
+    vadeInput.value = `${yil}-${ay}-${gun}`;
 }
 
 async function satisIsleminiTamamla() {

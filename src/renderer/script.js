@@ -1,9 +1,63 @@
-window.onload = () => {
+let translations = {};
+let currentLang = localStorage.getItem('appLang') || 'tr';
+
+window.onload = async () => {
+    await initLanguage();
     dashboardYukle();
     carileriYukle();
     stoklariYukle();
     satisFormlariniDoldur();
 };
+
+async function initLanguage() {
+    await loadLanguage(currentLang);
+}
+
+async function loadLanguage(lang) {
+    try {
+        const response = await fetch(`locales/${lang}.json`);
+        translations = await response.json();
+        currentLang = lang;
+        localStorage.setItem('appLang', lang);
+        applyTranslations();
+    } catch (error) {
+        console.error("Language load error:", error);
+    }
+}
+
+function applyTranslations() {
+    // data-i18n olan tüm elementleri çevir
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[key]) {
+            // Eğer elementin içinde sadece metin varsa veya span varsa
+            // Bazı elementlerin içinde SVG olabilir, onları korumak lazım
+            const span = el.querySelector('span');
+            if (span) {
+                span.innerText = translations[key];
+            } else if (el.children.length === 0) {
+                el.innerText = translations[key];
+            }
+        }
+    });
+
+    // placeholder çevirisi
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[key]) {
+            el.placeholder = translations[key];
+        }
+    });
+}
+
+function changeLanguage(lang) {
+    loadLanguage(lang);
+}
+
+// Çeviri yardımcı fonksiyonu (JS içindeki metinler için)
+function t(key) {
+    return translations[key] || key;
+}
 
 // Global Data Storage for easy price calculation
 let globalStokVerileri = [];
@@ -16,9 +70,9 @@ async function dashboardYukle() {
         const data = await window.api.getDashboardData();
 
         // 1. Text Metrikleri Güncelle
-        document.getElementById('metric-kasa').innerText = "₺ " + parseFloat(data.toplamKasa).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-        document.getElementById('metric-alacak').innerText = "₺ " + parseFloat(data.gelecekOdemeler).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-        document.getElementById('metric-borc').innerText = "₺ " + parseFloat(data.gecikenBorclar).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        document.getElementById('metric-kasa').innerText = (currentLang === 'tr' ? "₺ " : "$ ") + parseFloat(data.toplamKasa).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2 });
+        document.getElementById('metric-alacak').innerText = (currentLang === 'tr' ? "₺ " : "$ ") + parseFloat(data.gelecekOdemeler).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2 });
+        document.getElementById('metric-borc').innerText = (currentLang === 'tr' ? "₺ " : "$ ") + parseFloat(data.gecikenBorclar).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2 });
 
         // 2. Grafiği Çiz (veya güncelle)
         const ctx = document.getElementById('salesChart');
@@ -38,7 +92,7 @@ async function dashboardYukle() {
             data: {
                 labels: aylar,
                 datasets: [{
-                    label: 'Toplam Satış (₺)',
+                    label: t('total_sales') + (currentLang === 'tr' ? ' (₺)' : ' ($)'),
                     data: tutarlar,
                     backgroundColor: 'rgba(99, 102, 241, 0.5)', // indigo-500 %50
                     borderColor: 'rgb(99, 102, 241)', // indigo-500
@@ -54,7 +108,7 @@ async function dashboardYukle() {
                         beginAtZero: true,
                         ticks: {
                             callback: function (value) {
-                                return '₺' + value.toLocaleString('tr-TR');
+                                return (currentLang === 'tr' ? '₺' : '$') + value.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US');
                             }
                         }
                     }
@@ -89,18 +143,20 @@ async function carileriYukle() {
             else if (cari.segment === 'Toptancı') { segmentClass = 'bg-blue-100 text-blue-700'; }
             else if (cari.segment === 'Riskli') { segmentClass = 'bg-red-100 text-red-700 font-bold border-red-200 border'; }
 
+            const displaySegment = t('segment_' + (cari.segment || 'Standard').toLowerCase());
+
             const satir = `
                 <tr class="hover:bg-gray-50 border-b border-gray-200 transition">
                     <td class="p-4 font-medium text-gray-800">${cari.unvan}</td>
                     <td class="p-4 text-gray-600">${cari.telefon || '-'}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-md ${segmentClass}">${segmentIcon}${cari.segment || 'Standart'}</span></td>
+                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-md ${segmentClass}">${segmentIcon}${displaySegment}</span></td>
                     <td class="p-4 font-bold ${cari.bakiye >= 0 ? 'text-green-600' : 'text-red-600'}">
-                        ₺ ${parseFloat(cari.bakiye).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                        ${currentLang === 'tr' ? '₺' : '$'} ${parseFloat(cari.bakiye).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2 })}
                     </td>
-                    <td class="p-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">${cari.durum}</span></td>
+                    <td class="p-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">${t(cari.durum.toLowerCase())}</span></td>
                     <td class="p-4 text-right whitespace-nowrap">
-                        <button onclick="cariProfilAc(${cari.id})" class="text-indigo-600 hover:text-indigo-800 font-bold mr-3 bg-indigo-50 px-3 py-1.5 rounded-md transition hover:bg-indigo-100">İncele</button>
-                        <button onclick="cariSil(${cari.id})" class="text-gray-400 hover:text-red-600 font-medium transition px-2">Sil</button>
+                        <button onclick="cariProfilAc(${cari.id})" class="text-indigo-600 hover:text-indigo-800 font-bold mr-3 bg-indigo-50 px-3 py-1.5 rounded-md transition hover:bg-indigo-100">${t('examine')}</button>
+                        <button onclick="cariSil(${cari.id})" class="text-gray-400 hover:text-red-600 font-medium transition px-2">${t('delete')}</button>
                     </td>
                 </tr>
             `;
@@ -118,10 +174,10 @@ function modalAc() {
 }
 function modalKapat() { document.getElementById('cariModal').classList.add('hidden'); }
 
-function sayfaDegistir(sayfaId, baslik) {
+function sayfaDegistir(sayfaId, baslikKey) {
     document.querySelectorAll('section').forEach(section => section.classList.add('hidden'));
     document.getElementById('section-' + sayfaId).classList.remove('hidden');
-    document.getElementById('pageTitle').innerText = baslik;
+    document.getElementById('pageTitle').innerText = t(sayfaId);
 }
 
 async function cariKaydet() {
@@ -130,7 +186,7 @@ async function cariKaydet() {
     const bakiyeKutusu = document.getElementById('balance');
     const segmentKutusu = document.getElementById('segment');
 
-    if (!unvanKutusu.value) return alert("Lütfen bir unvan giriniz!");
+    if (!unvanKutusu.value) return alert(t('enter_title_error'));
 
     const veri = {
         unvan: unvanKutusu.value,
@@ -143,7 +199,7 @@ async function cariKaydet() {
     try {
         const sonuc = await window.api.cariEkle(veri);
         if (sonuc.changes > 0) {
-            alert("Müşteri başarıyla kaydedildi!");
+            alert(t('success_customer'));
             modalKapat();
             carileriYukle(); // Sayfayı yenilemek yerine listeyi tazele
             dashboardYukle(); // Dashboard metrikleri (bekleyen ödemeler vs. değişebilir)
@@ -154,11 +210,11 @@ async function cariKaydet() {
 }
 
 async function cariSil(id) {
-    if (confirm("Bu müşteri kaydını silmek istediğinize emin misiniz?")) {
+    if (confirm(t('confirm_delete'))) {
         try {
             const sonuc = await window.api.cariSil(id);
             if (sonuc.changes > 0) {
-                alert("Kayıt silindi.");
+                alert(t('record_deleted'));
                 carileriYukle(); // Listeyi tazele
                 dashboardYukle();
             }
@@ -175,20 +231,21 @@ async function cariProfilAc(id) {
         if (!cari) return alert("Müşteri bulunamadı!");
 
         // Ekranı değiştir
-        sayfaDegistir('cari-detay', cari.unvan + ' Profili');
+        sayfaDegistir('cari-detay', cari.unvan + ' ' + t('profile'));
 
         // Üst Kısım Bilgileri
         document.getElementById('islem_cari_id').value = cari.id; // Fiş modalı için ID'yi saklıyoruz
         document.getElementById('detayUnvan').innerText = cari.unvan;
-        document.getElementById('detaySegmentTag').innerText = cari.segment || 'Standart';
-        document.getElementById('detayBakiye').innerText = `₺ ${parseFloat(cari.bakiye).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('detaySegmentTag').innerText = t('segment_' + (cari.segment || 'Standard').toLowerCase());
+        document.getElementById('detayBakiye').innerText = `${currentLang === 'tr' ? '₺' : '$'} ${parseFloat(cari.bakiye).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2 })}`;
 
         // İşlem İstatistikleri
         document.getElementById('detayIslemSayisi').innerText = islemler.length;
-        document.getElementById('detaySonIslem').innerText = islemler.length > 0 ? (new Date(islemler[0].tarih)).toLocaleDateString('tr-TR') : '-';
+        document.getElementById('detaySonIslem').innerText = islemler.length > 0 ? (new Date(islemler[0].tarih)).toLocaleDateString(currentLang === 'tr' ? 'tr-TR' : 'en-US') : '-';
 
         // Segment renk sınıfı
         const tagBox = document.getElementById('detaySegmentTag');
+        tagBox.innerText = t('segment_' + (cari.segment || 'standard').toLowerCase() + '_tag');
         tagBox.className = 'inline-block mt-2 text-xs font-semibold px-2.5 py-0.5 rounded border ';
         if (cari.segment === 'VIP') tagBox.className += 'bg-purple-100 text-purple-800 border-purple-400';
         else if (cari.segment === 'Riskli') tagBox.className += 'bg-red-100 text-red-800 border-red-400';
@@ -199,10 +256,10 @@ async function cariProfilAc(id) {
         tabloGövdesi.innerHTML = "";
 
         if (islemler.length === 0) {
-            tabloGövdesi.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 italic">Henüz geçmiş bir işlem (alım/satım) bulunmuyor.</td></tr>`;
+            tabloGövdesi.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 italic">${t('no_transaction_history')}</td></tr>`;
         } else {
             islemler.forEach(islem => {
-                const tarihStr = new Date(islem.tarih).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const tarihStr = new Date(islem.tarih).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 // Satış/Tahsilat yeşil, Alış/Ödeme kırmızı mantığı (örnektir)
                 const renk = (islem.islem_tipi === 'Satış' || islem.islem_tipi === 'Tahsilat') ? 'text-green-600' : 'text-red-600';
                 const onEk = (islem.islem_tipi === 'Satış' || islem.islem_tipi === 'Tahsilat') ? '+' : '-';
@@ -210,9 +267,9 @@ async function cariProfilAc(id) {
                 tabloGövdesi.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors group">
                         <td class="px-6 py-4 text-sm text-gray-500">${tarihStr}</td>
-                        <td class="px-6 py-4"><span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">${islem.islem_tipi}</span></td>
+                        <td class="px-6 py-4"><span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">${t(islem.islem_tipi.toLowerCase()) || islem.islem_tipi}</span></td>
                         <td class="px-6 py-4 text-sm text-gray-700">${islem.aciklama || '-'}</td>
-                        <td class="px-6 py-4 text-sm font-bold text-right ${renk}">${onEk}₺${parseFloat(islem.tutar).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                        <td class="px-6 py-4 text-sm font-bold text-right ${renk}">${onEk}${currentLang === 'tr' ? '₺' : '$'}${parseFloat(islem.tutar).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2 })}</td>
                     </tr>
                 `;
             });
@@ -241,8 +298,8 @@ async function islemKaydet() {
     const tutar = parseFloat(document.getElementById('islem_tutar').value) || 0;
     const aciklama = document.getElementById('islem_aciklama').value;
 
-    if (!cariId) return alert("Cari bilgisi alınamadı!");
-    if (tutar <= 0) return alert("Geçerli bir tutar girmelisiniz!");
+    if (!cariId) return alert(t('cari_id_error'));
+    if (tutar <= 0) return alert(t('tutar_error'));
 
     const veri = {
         cari_id: cariId,
@@ -254,7 +311,7 @@ async function islemKaydet() {
     try {
         const sonuc = await window.api.islemEkle(veri);
         if (sonuc.success) {
-            alert("İşlem başarıyla kaydedildi!");
+            alert(t('transaction_success'));
             islemModalKapat();
 
             // Ekranları tazeliyoruz
@@ -262,11 +319,11 @@ async function islemKaydet() {
             carileriYukle(); // Genel cari listeyi arka planda yenile
             dashboardYukle(); // Kasa/Bakiye özetleri değişmiş olabilir
         } else {
-            alert("İşlem kaydedilemedi!");
+            alert(t('transaction_error'));
         }
     } catch (error) {
         console.error("İşlem kaydetme hatası:", error);
-        alert("İşlem sırasında hata oluştu:\n" + error);
+        alert(t('transaction_error') + ":\n" + error);
     }
 }
 
@@ -294,8 +351,8 @@ function stokModalAc(stokId = null) {
         kdvKutu.value = stok.kdv_orani;
         stokKutu.value = stok.stok_miktari;
 
-        baslik.innerText = "Ürün Düzenle";
-        submitBtn.innerText = "Güncelle";
+        baslik.innerText = t('edit_product');
+        submitBtn.innerText = t('update');
         submitBtn.setAttribute('onclick', 'stokGuncelle()');
     } else {
         document.getElementById('edit_stok_id').value = "";
@@ -306,8 +363,8 @@ function stokModalAc(stokId = null) {
         stokKutu.value = "0";
         kdvKutu.value = "20";
 
-        baslik.innerText = "Yeni Ürün Kartı";
-        submitBtn.innerText = "Ürünü Kaydet";
+        baslik.innerText = t('new_product');
+        submitBtn.innerText = t('save_product');
         submitBtn.setAttribute('onclick', 'stokKaydet()');
     }
 
@@ -335,16 +392,16 @@ async function stoklariYukle() {
                 <tr class="hover:bg-gray-50 border-b border-gray-200 transition">
                     <td class="p-4 font-medium text-gray-800">${stok.urun_adi}</td>
                     <td class="p-4 text-gray-600">${stok.barkod || '-'}</td>
-                    <td class="p-4 font-bold text-blue-600">${stok.stok_miktari} Adet</td>
+                    <td class="p-4 font-bold text-blue-600">${stok.stok_miktari} ${t('quantity_unit')}</td>
                     <td class="p-4">
-                        <span class="text-sm text-gray-500 line-through">₺${alisStr}</span><br>
-                        <span class="font-bold text-green-600">₺${satisStr}</span>
+                        <span class="text-sm text-gray-500 line-through">${currentLang === 'tr' ? '₺' : '$'}${alisStr}</span><br>
+                        <span class="font-bold text-green-600">${currentLang === 'tr' ? '₺' : '$'}${satisStr}</span>
                     </td>
                     <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold">%${stok.kdv_orani}</span></td>
                     <td class="p-4 text-right">
-                        <button onclick="stokProfilAc(${stok.id})" class="text-indigo-600 hover:text-indigo-800 font-bold mr-3 bg-indigo-50 px-3 py-1.5 rounded-md transition hover:bg-indigo-100">İncele</button>
-                        <button onclick="stokModalAc(${stok.id})" class="text-blue-600 hover:text-blue-800 font-medium mr-3">Düzenle</button>
-                        <button onclick="stokSil(${stok.id})" class="text-red-600 hover:text-red-800 font-medium">Sil</button>
+                        <button onclick="stokProfilAc(${stok.id})" class="text-indigo-600 hover:text-indigo-800 font-bold mr-3 bg-indigo-50 px-3 py-1.5 rounded-md transition hover:bg-indigo-100">${t('examine')}</button>
+                        <button onclick="stokModalAc(${stok.id})" class="text-blue-600 hover:text-blue-800 font-medium mr-3">${t('edit')}</button>
+                        <button onclick="stokSil(${stok.id})" class="text-red-600 hover:text-red-800 font-medium">${t('delete')}</button>
                     </td>
                 </tr>
             `;
@@ -364,7 +421,7 @@ async function stokGuncelle() {
     const kdvKutu = document.getElementById('kdv_orani');
     const stokKutu = document.getElementById('stok_miktari');
 
-    if (!adKutu.value) return alert("Lütfen bir Ürün Adı giriniz!");
+    if (!adKutu.value) return alert(t('enter_product_name_error'));
 
     const veri = {
         id: editId,
@@ -379,7 +436,7 @@ async function stokGuncelle() {
     try {
         const sonuc = await window.api.stokGuncelle(veri);
         if (sonuc.changes > 0) {
-            alert("Ürün başarıyla güncellendi!");
+            alert(t('product_update_success'));
             stokModalKapat();
             stoklariYukle();
         }
@@ -396,7 +453,7 @@ async function stokKaydet() {
     const kdvKutu = document.getElementById('kdv_orani');
     const stokKutu = document.getElementById('stok_miktari');
 
-    if (!adKutu.value) return alert("Lütfen bir Ürün Adı giriniz!");
+    if (!adKutu.value) return alert(t('enter_product_name_error'));
 
     const veri = {
         urun_adi: adKutu.value,
@@ -410,7 +467,7 @@ async function stokKaydet() {
     try {
         const sonuc = await window.api.stokEkle(veri);
         if (sonuc.changes > 0) {
-            alert("Ürün başarıyla kaydedildi!");
+            alert(t('product_success'));
             stokModalKapat();
 
             // Temizlik
@@ -428,11 +485,11 @@ async function stokKaydet() {
 }
 
 async function stokSil(id) {
-    if (confirm("Bu ürünü tamamen silmek istediğinize emin misiniz?")) {
+    if (confirm(t('confirm_delete_product'))) {
         try {
             const sonuc = await window.api.stokSil(id);
             if (sonuc.changes > 0) {
-                alert("Ürün silindi.");
+                alert(t('product_deleted'));
                 stoklariYukle(); // Listeyi tazele
             }
         } catch (error) {
@@ -468,18 +525,18 @@ async function stokProfilAc(id) {
         tabloGövdesi.innerHTML = "";
 
         if (islemler.length === 0) {
-            tabloGövdesi.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 italic">Bu ürüne ait geçmiş bir işlem bulunmuyor.</td></tr>`;
+            tabloGövdesi.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400 italic">${t('no_product_moves')}</td></tr>`;
         } else {
             islemler.forEach(islem => {
-                const tarihStr = new Date(islem.tarih).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const unvanStr = islem.unvan ? islem.unvan : 'Bilinmeyen Müşteri';
+                const tarihStr = new Date(islem.tarih).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const unvanStr = islem.unvan ? islem.unvan : t('unknown_customer');
 
                 tabloGövdesi.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors group">
                         <td class="px-6 py-4 text-sm text-gray-500">${tarihStr}</td>
-                        <td class="px-6 py-4"><span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">${islem.islem_tipi}</span></td>
-                        <td class="px-6 py-4 text-sm text-gray-700">${islem.aciklama || '-'} <br><span class="text-xs text-gray-500">Müşteri: ${unvanStr}</span></td>
-                        <td class="px-6 py-4 text-sm font-bold text-right text-gray-800">₺${parseFloat(islem.tutar).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</td>
+                        <td class="px-6 py-4"><span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">${t(islem.islem_tipi.toLowerCase()) || islem.islem_tipi}</span></td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${islem.aciklama || '-'} <br><span class="text-xs text-gray-500">${t('customer')}: ${unvanStr}</span></td>
+                        <td class="px-6 py-4 text-sm font-bold text-right text-gray-800">${currentLang === 'tr' ? '₺' : '$'}${parseFloat(islem.tutar).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2 })}</td>
                     </tr>
                 `;
             });
@@ -531,8 +588,8 @@ async function satisFormlariniDoldur() {
     if (!cariSelect) return;
 
     // Önce temizle
-    cariSelect.innerHTML = '<option value="">-- Müşteri Seçin --</option>';
-    stokSecenekHTML = '<option value="">-- Ürün Seçin --</option>';
+    cariSelect.innerHTML = `<option value="">-- ${t('select_customer')} --</option>`;
+    stokSecenekHTML = `<option value="">-- ${t('select_product')} --</option>`;
 
     // Tüm carileri getir (Global listemizi güncel çekiyoruz)
     const cariler = await window.api.carileriGetir();
@@ -544,8 +601,8 @@ async function satisFormlariniDoldur() {
     const stoklar = await window.api.stoklariGetir();
     stoklar.forEach(s => {
         // Stoğu biten ürünleri göster ama engelle veya belirt
-        const stokBilgisi = s.stok_miktari > 0 ? `(Stok: ${s.stok_miktari})` : `(STOKTA YOK)`;
-        stokSecenekHTML += `<option value="${s.id}" data-fiyat="${s.satis_fiyati}" data-stok="${s.stok_miktari}" data-kdv="${s.kdv_orani}" ${s.stok_miktari <= 0 ? 'disabled' : ''}>${s.urun_adi} - ₺${s.satis_fiyati} ${stokBilgisi}</option>`;
+        const stokBilgisi = s.stok_miktari > 0 ? `(${t('stock')}: ${s.stok_miktari})` : `(${t('out_of_stock')})`;
+        stokSecenekHTML += `<option value="${s.id}" data-fiyat="${s.satis_fiyati}" data-stok="${s.stok_miktari}" data-kdv="${s.kdv_orani}" ${s.stok_miktari <= 0 ? 'disabled' : ''}>${s.urun_adi} - ${currentLang === 'tr' ? '₺' : '$'}${s.satis_fiyati} ${stokBilgisi}</option>`;
     });
 
     document.getElementById('faturaSatirlari').innerHTML = "";
@@ -622,7 +679,7 @@ function hesaplaSatirTutar(element, fiyatManuelDegisti = false) {
 
     // Stok kontrolü (uyarı verir, düzeltir)
     if (adet > mevcutStok) {
-        alert("Uyarı: Yeterli stok yok! (Mevcut: " + mevcutStok + ")");
+        alert(t('no_stock_warning') + " (" + t('current') + ": " + mevcutStok + ")");
         adet = mevcutStok;
         adetInput.value = adet;
     }
@@ -635,7 +692,7 @@ function hesaplaSatirTutar(element, fiyatManuelDegisti = false) {
     const kdvTutari = hamTutar * (kdv / 100);
     const toplamTutar = hamTutar + kdvTutari;
 
-    tutarGosterim.innerText = "₺" + toplamTutar.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    tutarGosterim.innerText = (currentLang === 'tr' ? "₺" : "$") + toplamTutar.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     tutarDeger.value = toplamTutar;
 
     faturaGenelToplamHesapla();
@@ -658,9 +715,9 @@ function faturaGenelToplamHesapla() {
     const genelToplamLabel = document.getElementById('genelToplamTutar');
     const sepetSayisiLabel = document.getElementById('sepetUrunSayisi');
 
-    genelToplamLabel.innerText = "₺ " + genelToplam.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    genelToplamLabel.innerText = (currentLang === 'tr' ? "₺ " : "$ ") + genelToplam.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     genelToplamLabel.setAttribute('data-hesaplanan', genelToplam);
-    sepetSayisiLabel.innerText = `${doluSatirSayisi} Kalem`;
+    sepetSayisiLabel.innerText = `${doluSatirSayisi} ${t('item_count')}`;
 }
 
 // Yeni Vade Tarihi Hesaplama Fonksiyonu
@@ -682,7 +739,7 @@ async function satisIsleminiTamamla() {
     const vadeTarihi = document.getElementById('satisVade').value;
     const genelToplam = parseFloat(document.getElementById('genelToplamTutar').getAttribute('data-hesaplanan'));
 
-    if (!cariId) return alert("Hata: Lütfen faturanın kesileceği Müşteriyi (Cari) seçin!");
+    if (!cariId) return alert(t('select_customer_error'));
 
     // Satırlardaki veriyi toplayalım
     const satirlar = document.querySelectorAll('.fatura-satiri');
@@ -705,7 +762,7 @@ async function satisIsleminiTamamla() {
         }
     });
 
-    if (toplananListe.length === 0) return alert("Hata: Faturada en az bir geçerli ürün seçili olmalıdır.");
+    if (toplananListe.length === 0) return alert(t('invoice_error_empty'));
 
     const faturaPaketi = {
         cari_id: cariId,
@@ -717,7 +774,7 @@ async function satisIsleminiTamamla() {
     try {
         const sonuc = await window.api.satisYap(faturaPaketi);
         if (sonuc.success) {
-            alert(`Fatura başarıyla kaydedildi! (${sonuc.islemSayisi} adet kalem işlendi.)`);
+            alert(t('invoice_success') + ` (${sonuc.islemSayisi} ${t('item_count')})`);
 
             document.getElementById('satisCariSecim').value = "";
             document.getElementById('satisVade').value = "";
@@ -729,7 +786,7 @@ async function satisIsleminiTamamla() {
             dashboardYukle(); // Satış yapıldı, kasa ve grafik güncellenmeli!
         }
     } catch (error) {
-        alert("Satış işleminde hata oluştu!\n(Veritabanı işlemleri geri alındı)\n\n" + error);
+        alert(t('invoice_error') + "\n\n" + error);
         console.error(error);
     }
 }

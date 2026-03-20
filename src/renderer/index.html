@@ -17,25 +17,25 @@
     <div
       class="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all border border-gray-200">
       <div class="p-6 border-b bg-gray-50 rounded-t-xl">
-        <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Fiş / İşlem Ekle</h3>
+        <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight" data-i18n="new_transaction">Yeni Fiş / İşlem Ekle</h3>
       </div>
 
       <div class="p-6 space-y-5">
         <input type="hidden" id="islem_cari_id" value="">
 
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">İşlem Tipi</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="transaction_type">İşlem Tipi</label>
           <select id="islem_tipi"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition font-semibold">
-            <option value="Tahsilat" class="text-green-600">Tahsilat (Müşteriden Para Alma)</option>
-            <option value="Ödeme" class="text-red-600">Ödeme (Müşteriye Para Verme)</option>
-            <option value="Borçlandırma">Manuel Borçlandırma (Faturasız)</option>
-            <option value="Alacaklandırma">Manuel Alacaklandırma (Faturasız)</option>
+            <option value="Tahsilat" class="text-green-600" data-i18n="collection">Tahsilat (Müşteriden Para Alma)</option>
+            <option value="Ödeme" class="text-red-600" data-i18n="payment">Ödeme (Müşteriye Para Verme)</option>
+            <option value="Borçlandırma" data-i18n="manual_debit">Manuel Borçlandırma (Faturasız)</option>
+            <option value="Alacaklandırma" data-i18n="manual_credit">Manuel Alacaklandırma (Faturasız)</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tutar</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="amount">Tutar</label>
           <div class="relative">
             <input type="number" id="islem_tutar" value="" placeholder="0.00" step="0.01"
               class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition pl-8 font-bold text-lg select-text pointer-events-auto">
@@ -44,21 +44,21 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Açıklama</label>
-          <textarea id="islem_aciklama" rows="2" placeholder="Örn: Nakit tahsilat, elden ödeme..."
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="description">Açıklama</label>
+          <textarea id="islem_aciklama" rows="2" placeholder="Örn: Nakit tahsilat, elden ödeme..." data-i18n-placeholder="description_placeholder"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
         </div>
       </div>
 
       <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
-        <button onclick="islemModalKapat()"
+        <button onclick="islemModalKapat()" data-i18n="cancel"
           class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-200 rounded-lg transition">Vazgeç</button>
         <button onclick="islemKaydet()"
           class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-200 transition active:scale-95 flex items-center">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
           </svg>
-          Kaydet
+          <span data-i18n="save">Kaydet</span>
         </button>
       </div>
     </div>
@@ -70,22 +70,22 @@
     <div
       class="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all border border-gray-200">
       <div class="p-6 border-b bg-gray-50 rounded-t-xl">
-        <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Müşteri Kaydı</h3>
+        <h3 class="text-xl font-bold text-gray-800 uppercase tracking-tight" data-i18n="new_customer">Yeni Müşteri Kaydı</h3>
       </div>
 
       <div class="p-6 space-y-5">
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Unvan / Ad Soyad</label>
-          <input type="text" id="unvan" placeholder="Örn: ABC Ltd. Şti."
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="unvan">Unvan / Ad Soyad</label>
+          <input type="text" id="unvan" placeholder="Örn: ABC Ltd. Şti." data-i18n-placeholder="unvan_placeholder"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
         </div>
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Telefon</label>
-          <input type="text" id="phone" placeholder="05XX XXX XX XX"
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="phone">Telefon</label>
+          <input type="text" id="phone" placeholder="05XX XXX XX XX" data-i18n-placeholder="phone_placeholder"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Açılış Bakiyesi</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="balance">Açılış Bakiyesi</label>
           <div class="relative">
             <input type="number" id="balance" value="0"
               class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition pl-8 select-text pointer-events-auto">
@@ -93,21 +93,21 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Müşteri Segmenti</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="segment">Müşteri Segmenti</label>
           <select id="segment"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
-            <option value="Standart">Standart</option>
-            <option value="VIP">VIP</option>
-            <option value="Toptancı">Toptancı</option>
-            <option value="Riskli">Riskli / Sorunlu</option>
+            <option value="Standart" data-i18n="segment_standard">Standart</option>
+            <option value="VIP" data-i18n="segment_vip">VIP</option>
+            <option value="Toptancı" data-i18n="segment_wholesaler">Toptancı</option>
+            <option value="Riskli" data-i18n="segment_risky">Riskli / Sorunlu</option>
           </select>
         </div>
       </div>
 
       <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
-        <button onclick="modalKapat()"
+        <button onclick="modalKapat()" data-i18n="cancel"
           class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-200 rounded-lg transition">Vazgeç</button>
-        <button onclick="cariKaydet()"
+        <button onclick="cariKaydet()" data-i18n="save"
           class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-200 transition active:scale-95">Kaydet</button>
       </div>
     </div>
@@ -120,47 +120,47 @@
     <div
       class="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all border border-gray-200">
       <div class="p-6 border-b bg-gray-50 rounded-t-xl">
-        <h3 id="stokModalBaslik" class="text-xl font-bold text-gray-800 uppercase tracking-tight">Yeni Ürün Kartı</h3>
+        <h3 id="stokModalBaslik" class="text-xl font-bold text-gray-800 uppercase tracking-tight" data-i18n="new_product">Yeni Ürün Kartı</h3>
       </div>
 
       <div class="p-6 grid grid-cols-2 gap-5">
         <input type="hidden" id="edit_stok_id" value="">
         <div class="col-span-2">
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ürün Adı</label>
-          <input type="text" id="urun_adi" placeholder="Örn: Laptop - Asus ROG"
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="product_name">Ürün Adı</label>
+          <input type="text" id="urun_adi" placeholder="Örn: Laptop - Asus ROG" data-i18n-placeholder="product_name_placeholder"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
         <div class="col-span-2 md:col-span-1">
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Barkod</label>
-          <input type="text" id="barkod" placeholder="Barkod Okut..."
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="barcode">Barkod</label>
+          <input type="text" id="barkod" placeholder="Barkod Okut..." data-i18n-placeholder="barcode_placeholder"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
         <div class="col-span-2 md:col-span-1">
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Başlangıç Stoğu</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="stock_amount">Başlangıç Stoğu</label>
           <input type="number" id="stok_miktari" value="0"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Alış Fiyatı (₺)</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="purchase_price">Alış Fiyatı (₺)</label>
           <input type="number" id="alis_fiyati" value="0" step="0.01"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
         <div>
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Satış Fiyatı (₺)</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="sale_price">Satış Fiyatı (₺)</label>
           <input type="number" id="satis_fiyati" value="0" step="0.01"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
         <div class="col-span-2">
-          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">KDV Oranı (%)</label>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1" data-i18n="tax_rate">KDV Oranı (%)</label>
           <input type="number" id="kdv_orani" value="20" min="0" max="100"
             class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
       </div>
 
       <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3 rounded-b-xl">
-        <button onclick="stokModalKapat()"
+        <button onclick="stokModalKapat()" data-i18n="cancel"
           class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-200 rounded-lg transition">Vazgeç</button>
-        <button id="stokKaydetBtn" onclick="stokKaydet()"
+        <button id="stokKaydetBtn" onclick="stokKaydet()" data-i18n="save_product"
           class="px-6 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-lg shadow-green-200 transition active:scale-95">Ürünü
           Kaydet</button>
       </div>
@@ -170,16 +170,23 @@
   <div class="flex h-screen">
     <aside class="w-64 bg-gray-900 text-white flex flex-col">
       <div class="h-16 flex items-center justify-center border-b border-gray-800">
-        <h1 class="text-xl font-bold tracking-wider">MUHASEBE PROGRAMI</h1>
+        <h1 class="text-xl font-bold tracking-wider" data-i18n="app_title">MUHASEBE PROGRAMI</h1>
       </div>
+      
+      <!-- Dil Değiştirici -->
+      <div class="px-4 py-4 border-b border-gray-800 flex justify-center space-x-2">
+        <button onclick="changeLanguage('tr')" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded text-xs font-bold transition">TR</button>
+        <button onclick="changeLanguage('en')" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded text-xs font-bold transition">EN</button>
+      </div>
+
       <nav class="flex-1 px-4 py-6 space-y-2">
-        <button onclick="sayfaDegistir('anasayfa', 'Ana Sayfa')"
+        <button onclick="sayfaDegistir('anasayfa', 'Ana Sayfa')" data-i18n="nav_home"
           class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Ana Sayfa</button>
-        <button onclick="sayfaDegistir('cariler', 'Müşteriler')"
+        <button onclick="sayfaDegistir('cariler', 'Müşteriler')" data-i18n="nav_customers"
           class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Müşteriler</button>
-        <button onclick="sayfaDegistir('stok', 'Stok Yönetimi')"
+        <button onclick="sayfaDegistir('stok', 'Stok Yönetimi')" data-i18n="nav_stock"
           class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Stok Yönetimi</button>
-        <button onclick="sayfaDegistir('faturalar', 'Faturalar')"
+        <button onclick="sayfaDegistir('faturalar', 'Faturalar')" data-i18n="nav_invoices"
           class="w-full text-left block px-4 py-2 rounded-md hover:bg-gray-800">Faturalar</button>
       </nav>
     </aside>
@@ -201,14 +208,14 @@
               <!-- Tahsilatlar Kutusu -->
               <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="bg-gray-50 border-b border-gray-200 px-6 py-3">
-                  <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Tahsilatlar</h3>
+                  <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider" data-i18n="collection">Tahsilatlar</h3>
                 </div>
                 <div
                   class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
                   <!-- Toplam Tahsil Edilecek -->
                   <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
-                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Toplam Tahsil Edilecek</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block" data-i18n="total_receivable">Toplam Tahsil Edilecek</span>
                     <div
                       class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-l-blue-500 border-t-blue-500 border-r-blue-500 flex items-center justify-center shadow-inner">
                       <span id="metric-alacak" class="text-lg font-black text-gray-800">₺ 0,00</span>
@@ -217,7 +224,7 @@
 
                   <!-- Gecikmiş (Şimdilik boş/statik) -->
                   <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
-                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Gecikmiş</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block" data-i18n="delayed">Gecikmiş</span>
                     <div
                       class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-t-red-500 border-r-red-500 flex items-center justify-center shadow-inner">
                       <span class="text-lg font-bold text-red-500">-</span>
@@ -226,7 +233,7 @@
 
                   <!-- Kasa Durumu (Ekstra Metrik Olarak) -->
                   <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
-                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Kasa (Satış Hacmi)</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block" data-i18n="cash_status">Kasa (Satış Hacmi)</span>
                     <div
                       class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-blue-200 flex items-center justify-center shadow-inner">
                       <span id="metric-kasa" class="text-lg font-bold text-gray-600">₺ 0,00</span>
@@ -238,14 +245,14 @@
               <!-- Ödemeler Kutusu -->
               <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="bg-gray-50 border-b border-gray-200 px-6 py-3">
-                  <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Ödemeler</h3>
+                  <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider" data-i18n="payment">Ödemeler</h3>
                 </div>
                 <div
                   class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
                   <!-- Toplam Ödenecek -->
                   <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
-                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Toplam Ödenecek</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block" data-i18n="total_payable">Toplam Ödenecek</span>
                     <div
                       class="relative w-32 h-32 rounded-full border-8 border-gray-100 border-l-gray-500 border-b-gray-500 border-r-gray-500 flex items-center justify-center shadow-inner">
                       <span id="metric-borc" class="text-lg font-black text-gray-800">₺ 0,00</span>
@@ -254,7 +261,7 @@
 
                   <!-- Gecikmiş (Şimdilik boş/statik) -->
                   <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
-                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Gecikmiş</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block" data-i18n="delayed">Gecikmiş</span>
                     <div class="flex items-center justify-center mt-6">
                       <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-500">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,12 +270,12 @@
                         </svg>
                       </div>
                     </div>
-                    <span class="text-xs text-gray-400 font-bold mt-2">ÖDEME YOK</span>
+                    <span class="text-xs text-gray-400 font-bold mt-2" data-i18n="no_payment">ÖDEME YOK</span>
                   </div>
 
                   <!-- Planlanmamış -->
                   <div class="flex flex-col items-center justify-center pt-4 md:pt-0">
-                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block">Planlanmamış</span>
+                    <span class="text-xs font-bold text-gray-500 uppercase mb-4 block" data-i18n="unplanned">Planlanmamış</span>
                     <div class="flex items-center justify-center mt-6">
                       <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-500">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,7 +284,7 @@
                         </svg>
                       </div>
                     </div>
-                    <span class="text-xs text-gray-400 font-bold mt-2">FATURA YOK</span>
+                    <span class="text-xs text-gray-400 font-bold mt-2" data-i18n="no_invoice">FATURA YOK</span>
                   </div>
                 </div>
               </div>
@@ -287,7 +294,7 @@
             <div class="col-span-1 space-y-6">
               <!-- Satış Grafiği -->
               <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
-                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4">Aylık Satış Trendi</h3>
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4" data-i18n="monthly_sales">Aylık Satış Trendi</h3>
                 <div class="flex-1 w-full min-h-[250px] relative">
                   <canvas id="salesChart"></canvas>
                 </div>
@@ -301,18 +308,18 @@
             <input type="text" id="cariArama" onkeyup="aramaYap('cariArama', 'cariListesi')"
               placeholder="Müşteri ara (Unvan veya Telefon)..."
               class="w-1/3 border p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="modalAc()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">+ Yeni Müşteri</button>
+            <button onclick="modalAc()" class="bg-blue-600 text-white px-4 py-2 rounded-lg" data-i18n="new_customer">+ Yeni Müşteri</button>
           </div>
           <div class="bg-white rounded-lg shadow border overflow-hidden">
             <table class="w-full text-left">
               <thead class="bg-gray-50 border-b">
                 <tr>
-                  <th class="p-4">Unvan</th>
-                  <th class="p-4">Telefon</th>
-                  <th class="p-4">Segment</th>
-                  <th class="p-4">Bakiye</th>
-                  <th class="p-4">Durum</th>
-                  <th class="p-4 text-right">İşlem</th>
+                  <th class="p-4" data-i18n="unvan">Unvan</th>
+                  <th class="p-4" data-i18n="phone">Telefon</th>
+                  <th class="p-4" data-i18n="segment">Segment</th>
+                  <th class="p-4" data-i18n="balance">Bakiye</th>
+                  <th class="p-4" data-i18n="status">Durum</th>
+                  <th class="p-4 text-right" data-i18n="action">İşlem</th>
                 </tr>
               </thead>
               <tbody id="cariListesi"></tbody>
@@ -343,14 +350,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
                 </path>
               </svg>
-              Yeni İşlem (Fiş)
+              <span data-i18n="new_transaction_btn">Yeni İşlem (Fiş)</span>
             </button>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             <div class="bg-white p-6 rounded-xl shadow border border-gray-100 flex items-center justify-between">
               <div>
-                <h4 class="text-sm font-semibold text-gray-500 uppercase">Güncel Bakiye</h4>
+                <h4 class="text-sm font-semibold text-gray-500 uppercase" data-i18n="current_balance">Güncel Bakiye</h4>
                 <p id="detayBakiye" class="text-2xl font-bold mt-1">₺ 0,00</p>
               </div>
               <div
@@ -359,7 +366,7 @@
             </div>
             <div class="bg-white p-6 rounded-xl shadow border border-gray-100 flex items-center justify-between">
               <div>
-                <h4 class="text-sm font-semibold text-gray-500 uppercase">Toplam İşlem Sayısı</h4>
+                <h4 class="text-sm font-semibold text-gray-500 uppercase" data-i18n="total_transaction_count">Toplam İşlem Sayısı</h4>
                 <p id="detayIslemSayisi" class="text-2xl font-bold mt-1 text-gray-800">0</p>
               </div>
               <div
@@ -368,7 +375,7 @@
             </div>
             <div class="bg-white p-6 rounded-xl shadow border border-gray-100 flex items-center justify-between">
               <div>
-                <h4 class="text-sm font-semibold text-gray-500 uppercase">Son İşlem</h4>
+                <h4 class="text-sm font-semibold text-gray-500 uppercase" data-i18n="last_transaction">Son İşlem</h4>
                 <p id="detaySonIslem" class="text-lg font-bold mt-1 text-gray-800">-</p>
               </div>
               <div
@@ -380,15 +387,15 @@
           <!-- Geçmiş İşlemler Tablosu -->
           <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden mt-8">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <h3 class="text-lg font-bold text-gray-800">İşlem Geçmişi (Hesap Özeti)</h3>
+              <h3 class="text-lg font-bold text-gray-800" data-i18n="transaction_history">İşlem Geçmişi (Hesap Özeti)</h3>
             </div>
             <table class="w-full text-left">
               <thead class="bg-white border-b border-gray-100">
                 <tr>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tarih</th>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">İşlem Tipi</th>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Açıklama</th>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Tutar
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider" data-i18n="date">Tarih</th>
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider" data-i18n="transaction_type">İşlem Tipi</th>
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider" data-i18n="description">Açıklama</th>
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right" data-i18n="amount">Tutar
                   </th>
                 </tr>
               </thead>
@@ -401,24 +408,26 @@
 
         <section id="section-stok" class="hidden">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold">Ürün Listesi</h3>
+            <h3 class="text-lg font-bold" data-i18n="product_list">Ürün Listesi</h3>
             <div class="flex items-center space-x-4">
-              <input type="text" id="stokArama" onkeyup="aramaYap('stokArama', 'stokListesi')"
+              <input type="text" id="stokArama" onkeyup="aramaYap('stokArama', 'stokListesi')" data-i18n-placeholder="search_stock"
                 placeholder="Stok ara (Ad veya Barkod)..."
                 class="w-64 border p-2 rounded-lg outline-none focus:ring-2 focus:ring-green-500">
-              <button onclick="stokModalAc()" class="bg-green-600 text-white px-4 py-2 rounded-lg">+ Yeni Ürün</button>
+              <button onclick="stokModalAc()" class="bg-green-600 text-white px-4 py-2 rounded-lg">
+                <span data-i18n="new_product_btn">+ Yeni Ürün</span>
+              </button>
             </div>
           </div>
           <div class="bg-white rounded-lg shadow border overflow-hidden">
             <table class="w-full text-left">
               <thead class="bg-gray-50 border-b">
                 <tr>
-                  <th class="p-4">Ürün Adı</th>
-                  <th class="p-4">Barkod</th>
-                  <th class="p-4">Stok</th>
-                  <th class="p-4">Alım/Satım</th>
-                  <th class="p-4">KDV</th>
-                  <th class="p-4 text-right">İşlem</th>
+                  <th class="p-4" data-i18n="product_name">Ürün Adı</th>
+                  <th class="p-4" data-i18n="barcode">Barkod</th>
+                  <th class="p-4" data-i18n="stock">Stok</th>
+                  <th class="p-4" data-i18n="buy_sell">Alım/Satım</th>
+                  <th class="p-4" data-i18n="tax">KDV</th>
+                  <th class="p-4 text-right" data-i18n="action">İşlem</th>
                 </tr>
               </thead>
               <tbody id="stokListesi"></tbody>
@@ -448,7 +457,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-6">
             <div class="bg-white p-6 rounded-xl shadow border border-gray-100 flex items-center justify-between">
               <div>
-                <h4 class="text-sm font-semibold text-gray-500 uppercase">Mevcut Stok</h4>
+                <h4 class="text-sm font-semibold text-gray-500 uppercase" data-i18n="current_stock">Mevcut Stok</h4>
                 <p id="detayStokMiktar" class="text-2xl font-bold mt-1 text-green-600">0 Adet</p>
               </div>
               <div
@@ -457,7 +466,7 @@
             </div>
             <div class="bg-white p-6 rounded-xl shadow border border-gray-100 flex items-center justify-between">
               <div>
-                <h4 class="text-sm font-semibold text-gray-500 uppercase">Alış / Satış Fiyatı</h4>
+                <h4 class="text-sm font-semibold text-gray-500 uppercase" data-i18n="buy_sell_price">Alış / Satış Fiyatı</h4>
                 <p id="detayStokFiyat" class="text-2xl font-bold mt-1 text-gray-800">₺0,00 / ₺0,00</p>
               </div>
               <div
@@ -469,16 +478,16 @@
           <!-- Geçmiş İşlemler Tablosu -->
           <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden mt-8">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <h3 class="text-lg font-bold text-gray-800">Ürün Hareketleri (Satış Geçmişi)</h3>
+              <h3 class="text-lg font-bold text-gray-800" data-i18n="product_movements">Ürün Hareketleri (Satış Geçmişi)</h3>
             </div>
             <table class="w-full text-left">
               <thead class="bg-white border-b border-gray-100">
                 <tr>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tarih</th>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">İşlem Tipi</th>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Açıklama / Müşteri
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider" data-i18n="date">Tarih</th>
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider" data-i18n="transaction_type">İşlem Tipi</th>
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider" data-i18n="description">Açıklama / Müşteri
                   </th>
-                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Tutar
+                  <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right" data-i18n="amount">Tutar
                   </th>
                 </tr>
               </thead>
@@ -492,8 +501,8 @@
         <section id="section-faturalar" class="hidden space-y-8">
           <div class="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div>
-              <h2 class="text-2xl font-bold text-gray-800">Yeni Satış Faturası</h2>
-              <p class="text-gray-500 text-sm mt-1">Müşteriye stoktan ürün satışı gerçekleştirin. Müşteri borçlanır,
+              <h2 class="text-2xl font-bold text-gray-800" data-i18n="new_invoice">Yeni Satış Faturası</h2>
+              <p class="text-gray-500 text-sm mt-1" data-i18n="invoice_desc">Müşteriye stoktan ürün satışı gerçekleştirin. Müşteri borçlanır,
                 stok düşer.</p>
             </div>
             <div class="w-12 h-12 bg-indigo-50 text-indigo-600 flex items-center justify-center rounded-xl">
@@ -512,17 +521,17 @@
               <!-- SEPET TABLOSU (LİSTE) -->
               <div class="border border-gray-200 rounded-lg overflow-hidden">
                 <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                  <h4 class="font-bold text-gray-700 text-sm">Fatura Kalemleri (Liste)</h4>
+                  <h4 class="font-bold text-gray-700 text-sm" data-i18n="invoice_items">Fatura Kalemleri (Liste)</h4>
                   <span id="sepetUrunSayisi"
                     class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-1 rounded-full">0 Kalem</span>
                 </div>
                 <table class="w-full text-left text-sm">
                   <thead class="bg-gray-50 border-b">
                     <tr>
-                      <th class="px-4 py-2 font-semibold text-gray-600 w-[40%]">Ürün Adı</th>
-                      <th class="px-4 py-2 font-semibold text-gray-600 w-24">Birim (₺)</th>
-                      <th class="px-4 py-2 font-semibold text-gray-600 w-20">Adet</th>
-                      <th class="px-4 py-2 font-semibold text-gray-600 text-right w-24">Tutar</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600 w-[40%]" data-i18n="product_name">Ürün Adı</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600 w-24" data-i18n="unit_price">Birim (₺)</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600 w-20" data-i18n="quantity">Adet</th>
+                      <th class="px-4 py-2 font-semibold text-gray-600 text-right w-24" data-i18n="subtotal">Tutar</th>
                       <th class="px-4 py-2 font-semibold text-gray-600 w-10"></th>
                     </tr>
                   </thead>
@@ -537,7 +546,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    Yeni Satır Ekle
+                    <span data-i18n="add_line">Yeni Satır Ekle</span>
                   </button>
                 </div>
               </div>
@@ -546,35 +555,35 @@
             <!-- Sağ Sütun: Müşteri, Özet ve Buton -->
             <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 flex flex-col justify-between space-y-6">
               <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Müşteri Seçimi</label>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2" data-i18n="customer_selection">Müşteri Seçimi</label>
                 <select id="satisCariSecim"
                   class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition mb-4">
-                  <option value="">-- Müşteri Seçin --</option>
+                  <option value="" data-i18n="select_customer">-- Müşteri Seçin --</option>
                 </select>
 
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Vade Tarihi (Opsiyonel)</label>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2" data-i18n="due_date">Vade Tarihi (Opsiyonel)</label>
                 <div class="space-y-2">
                   <input type="date" id="satisVade"
                     class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
                   <div class="flex space-x-2">
                     <button type="button" onclick="vadeEkle(7)"
                       class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">7
-                      Gün</button>
+                      <span data-i18n="days">Gün</span></button>
                     <button type="button" onclick="vadeEkle(15)"
                       class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">15
-                      Gün</button>
+                      <span data-i18n="days">Gün</span></button>
                     <button type="button" onclick="vadeEkle(30)"
                       class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">30
-                      Gün</button>
+                      <span data-i18n="days">Gün</span></button>
                     <button type="button" onclick="vadeEkle(60)"
                       class="flex-1 bg-gray-200 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs font-bold py-1.5 rounded transition">60
-                      Gün</button>
+                      <span data-i18n="days">Gün</span></button>
                   </div>
                 </div>
 
-                <h3 class="text-sm font-bold text-gray-500 uppercase border-b pb-2 mb-4 mt-6">Genel Toplam Özeti</h3>
+                <h3 class="text-sm font-bold text-gray-500 uppercase border-b pb-2 mb-4 mt-6" data-i18n="total_summary">Genel Toplam Özeti</h3>
                 <div class="flex justify-between items-center bg-white p-4 rounded-lg border border-gray-200">
-                  <span class="font-bold text-gray-700">Toplam Ödenecek:</span>
+                  <span class="font-bold text-gray-700" data-i18n="total_to_pay">Toplam Ödenecek:</span>
                   <span id="genelToplamTutar" class="text-2xl font-black text-indigo-600" data-hesaplanan="0">₺
                     0,00</span>
                 </div>
@@ -582,7 +591,7 @@
 
               <button onclick="satisIsleminiTamamla()"
                 class="w-full mt-6 bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-indigo-700 hover:shadow-xl transition active:scale-95 flex items-center justify-center space-x-2">
-                <span>Faturayı Kes (Onayla)</span>
+                <span data-i18n="confirm_invoice">Faturayı Kes (Onayla)</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
